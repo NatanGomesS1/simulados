@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Administração — Simulados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#0A0E14; --panel:#121821; --panel2:#171f2b; --wire:#2A3441; --text:#EDEDE5; --soft:#B4BBC6; --muted:#8B93A1; --amber:#F5A623; --teal:#00D9B5; --red:#FF6B78; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  a{color:var(--teal);}
+  .wrap{max-width:860px;margin:0 auto;padding:20px 16px 48px;display:flex;flex-direction:column;gap:20px;}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .brand{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.12em;}
+  h1{margin:0;font-size:22px;}
+  h2{margin:0 0 12px;font-size:16px;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .soft{color:var(--soft);}
+  .nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+  .num{background:var(--panel);border:1px solid var(--wire);border-radius:10px;padding:14px;}
+  .num .r{font-size:12px;color:var(--soft);}
+  .num .v{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;margin-top:4px;}
+  .abas{display:flex;gap:6px;flex-wrap:wrap;}
+  .abas button{min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--wire);background:var(--panel);color:var(--soft);font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+  .abas button[aria-selected="true"]{border-color:var(--teal);color:var(--teal);background:#0D2420;}
+  .painel{background:var(--panel);border:1px solid var(--wire);border-radius:12px;padding:16px;}
+  .item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--wire);flex-wrap:wrap;}
+  .item:last-child{border-bottom:none;}
+  .item .info{display:flex;flex-direction:column;gap:4px;min-width:220px;flex:1;}
+  .item .acoes{display:flex;gap:8px;flex-wrap:wrap;}
+  .b{min-height:40px;padding:0 14px;border-radius:8px;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:1px solid var(--wire);background:transparent;color:var(--text);text-decoration:none;display:inline-flex;align-items:center;}
+  .b.ok{background:var(--teal);border-color:var(--teal);color:#04211C;}
+  .b.no{color:var(--red);border-color:#5a2a31;}
+  .b.zap{color:#5BE39A;border-color:#1F5B3A;}
+  .b:disabled{opacity:.5;cursor:not-allowed;}
+  .b:focus-visible,.abas button:focus-visible,input:focus,select:focus{outline:2px solid var(--teal);outline-offset:2px;}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;border-radius:20px;padding:3px 9px;}
+  .t-ok{color:#04211C;background:var(--teal);} .t-warn{color:#1A1200;background:var(--amber);} .t-off{color:var(--red);border:1px solid var(--red);}
+  form.linha{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end;}
+  label{font-size:13px;color:var(--soft);display:flex;flex-direction:column;gap:6px;}
+  input,select{min-height:44px;background:var(--panel2);border:1px solid var(--wire);border-radius:8px;color:var(--text);font-size:15px;padding:0 10px;font-family:Inter,sans-serif;width:100%;}
+  .msg{border-radius:10px;padding:12px 14px;font-size:14px;}
+  .msg.ok{background:#0D2420;border:1px solid var(--teal);} .msg.erro{background:#2A1216;border:1px solid var(--red);}
+  .vazio{color:var(--soft);font-size:14px;padding:8px 0;}
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div style="display:flex;flex-direction:column;gap:4px;"><span class="brand">PAINEL DE BANCADA</span><h1>Administração</h1></div>
+    <button class="b" id="btnSair" hidden>Sair</button>
+  </div>
+
+  <div id="msg" class="msg" role="status" aria-live="polite" hidden></div>
+
+  <form id="formLogin" class="painel" style="display:flex;flex-direction:column;gap:12px;max-width:420px;" hidden>
+    <h2 style="margin:0;">Entrar como administrador</h2>
+    <label>E-mail<input id="lEmail" type="email" autocomplete="email" required></label>
+    <label>Senha<input id="lSenha" type="password" autocomplete="current-password" required></label>
+    <button class="b ok" type="submit" style="justify-content:center;min-height:46px;">Entrar</button>
+  </form>
+
+  <div id="app" hidden style="display:flex;flex-direction:column;gap:20px;">
+    <div class="nums">
+      <div class="num"><div class="r">Pedidos aguardando</div><div class="v" id="nPend">0</div></div>
+      <div class="num"><div class="r">Acessos ativos</div><div class="v" id="nAtivos">0</div></div>
+      <div class="num"><div class="r">Vencem em 5 dias</div><div class="v" id="nVencendo">0</div></div>
+      <div class="num"><div class="r">Liberado no mês</div><div class="v" id="nMes">R$ 0</div></div>
+    </div>
+
+    <div class="abas" role="tablist">
+      <button role="tab" aria-selected="true" data-aba="pend">Pedidos</button>
+      <button role="tab" aria-selected="false" data-aba="acessos">Acessos</button>
+      <button role="tab" aria-selected="false" data-aba="manual">Dar acesso</button>
+      <button role="tab" aria-selected="false" data-aba="questoes">Questões</button>
+    </div>
+
+    <section class="painel" id="aba-pend">
+      <h2>Pedidos aguardando liberação</h2>
+      <p class="soft" style="margin:-4px 0 12px;font-size:13px;">Confira o pagamento no app do Mercado Pago (valor, nome e horário) antes de liberar.</p>
+      <div id="listaPend"></div>
+    </section>
+
+    <section class="painel" id="aba-acessos" hidden>
+      <h2>Acessos</h2>
+      <label style="margin-bottom:12px;">Buscar por e-mail<input id="busca" type="search" placeholder="email@exemplo.com"></label>
+      <div id="listaAcessos"></div>
+    </section>
+
+    <section class="painel" id="aba-manual" hidden>
+      <h2>Dar ou renovar acesso manualmente</h2>
+      <p class="soft" style="margin:-4px 0 12px;font-size:13px;">Para cortesias, pagamentos fora do link ou renovação de quem pagou direto no Pix. O aluno precisa criar a conta com este mesmo e-mail.</p>
+      <form class="linha" id="formManual">
+        <label>E-mail do aluno<input id="mEmail" type="email" required></label>
+        <label>Simulado<select id="mSim"></select></label>
+        <label>Plano<select id="mPlano"></select></label>
+        <button class="b ok" type="submit" style="justify-content:center;min-height:44px;">Liberar</button>
+      </form>
+    </section>
+
+    <section class="painel" id="aba-questoes" hidden>
+      <h2>Importar questões</h2>
+      <p class="soft" style="margin:-4px 0 12px;font-size:13px;line-height:1.5;">Escolha o arquivo <b>questoes_eletrica.json</b> ou <b>questoes_seguranca.json</b>. A importação substitui todas as questões daquele simulado; o progresso dos alunos não é afetado.</p>
+      <label>Arquivo de questões (.json)<input id="qArquivo" type="file" accept=".json,application/json"></label>
+      <p id="qResumo" class="soft" style="font-size:14px;margin:12px 0;"></p>
+      <button class="b ok" id="qImportar" disabled style="justify-content:center;min-height:46px;">Importar</button>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+  const C = window.CFG;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const brl = (v) => 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const dataBR = (d) => { const p = String(d).slice(0, 10).split('-'); return `${p[2]}/${p[1]}/${p[0]}`; };
+  const hojeISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+  const diasAte = (iso) => Math.round((new Date(iso + 'T12:00:00') - new Date(hojeISO() + 'T12:00:00')) / 86400000);
+  const urlSite = location.href.replace(/admin\.html.*$/, '');
+  const soDigitos = (s) => String(s || '').replace(/\D/g, '');
+  const zapAluno = (num, msg) => { let d = soDigitos(num); if (d.length >= 10 && d.length <= 11) d = '55' + d; return d ? `https://wa.me/${d}?text=${encodeURIComponent(msg)}` : ''; };
+
+  if (!window.supabase || /COLE_/.test(C.supabaseUrl + C.supabaseAnonKey)) { aviso('Preencha o config.js com os dados do Supabase.', true); return; }
+  const SB = window.supabase.createClient(C.supabaseUrl, C.supabaseAnonKey);
+  let acessos = [];
+
+  function aviso(t, erro) { const m = $('msg'); m.hidden = false; m.className = 'msg ' + (erro ? 'erro' : 'ok'); m.textContent = t; clearTimeout(aviso.t); if (!erro) aviso.t = setTimeout(() => { m.hidden = true; }, 6000); }
+
+  $('mSim').innerHTML = Object.entries(C.simulados).map(([id, s]) => `<option value="${id}">${esc(s.nome)}</option>`).join('');
+  $('mPlano').innerHTML = Object.entries(C.planos).map(([id, p]) => `<option value="${id}">${esc(p.nome)}</option>`).join('');
+
+  document.querySelectorAll('[data-aba]').forEach((b) => b.onclick = () => {
+    document.querySelectorAll('[data-aba]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    ['pend', 'acessos', 'manual', 'questoes'].forEach((a) => { $('aba-' + a).hidden = a !== b.dataset.aba; });
+  });
+
+  async function iniciar() {
+    const { data } = await SB.auth.getSession();
+    if (!data.session) { $('formLogin').hidden = false; $('app').hidden = true; $('btnSair').hidden = true; return; }
+    const adm = await SB.rpc('eh_admin');
+    if (adm.error || adm.data !== true) {
+      $('formLogin').hidden = false; $('app').hidden = true; $('btnSair').hidden = false;
+      aviso('Esta conta não é de administrador. Saia e entre com o seu e-mail de administrador.', true);
+      return;
+    }
+    $('formLogin').hidden = true; $('app').hidden = false; $('btnSair').hidden = false;
+    await carregar();
+  }
+
+  $('formLogin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const { error } = await SB.auth.signInWithPassword({ email: $('lEmail').value.trim().toLowerCase(), password: $('lSenha').value });
+    if (error) return aviso('E-mail ou senha incorretos.', true);
+    $('msg').hidden = true;
+    iniciar();
+  });
+  $('btnSair').onclick = async () => { await SB.auth.signOut(); iniciar(); };
+
+  async function carregar() {
+    const [pe, ac, mes] = await Promise.all([
+      SB.from('pedidos').select('*').eq('status', 'pendente').order('criado_em', { ascending: true }),
+      SB.from('acessos').select('*').order('valido_ate', { ascending: true }),
+      SB.from('pedidos').select('valor, resolvido_em').eq('status', 'liberado').gte('resolvido_em', hojeISO().slice(0, 8) + '01')
+    ]);
+    if (pe.error || ac.error) return aviso('Erro ao carregar: ' + (pe.error || ac.error).message, true);
+    acessos = ac.data || [];
+    const hoje = hojeISO();
+    const ativos = acessos.filter((a) => a.valido_ate >= hoje);
+    $('nPend').textContent = pe.data.length;
+    $('nAtivos').textContent = ativos.length;
+    $('nVencendo').textContent = ativos.filter((a) => diasAte(a.valido_ate) <= 5 && a.plano !== 'prova').length;
+    $('nMes').textContent = brl((mes.data || []).reduce((s, p) => s + Number(p.valor), 0));
+    document.title = (pe.data.length ? `(${pe.data.length}) ` : '') + 'Administração — Simulados';
+
+    $('listaPend').innerHTML = pe.data.length ? pe.data.map((p) => {
+      const zap = p.whatsapp ? zapAluno(p.whatsapp, `Olá, ${p.nome.split(' ')[0]}! Seu acesso ao Simulado de ${C.simulados[p.simulado].nome} foi liberado. Entre em ${urlSite} com o seu e-mail (${p.email}) e senha. Bons estudos!`) : '';
+      return `<div class="item"><div class="info">
+          <strong>${esc(p.nome)}</strong>
+          <span class="soft" style="font-size:13px;">${esc(p.email)}${p.whatsapp ? ' · ' + esc(p.whatsapp) : ''}</span>
+          <span class="mono" style="font-size:13px;">nº ${p.id} · ${esc(C.simulados[p.simulado].nome)} · ${esc(C.planos[p.plano].nome)} · <b>${brl(p.valor)}</b> · ${new Date(p.criado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span>
+        </div><div class="acoes">
+          <button class="b ok" data-liberar="${p.id}" data-zap="${esc(zap)}">Liberar</button>
+          <button class="b no" data-recusar="${p.id}">Recusar</button>
+        </div></div>`;
+    }).join('') : '<div class="vazio">Nenhum pedido aguardando.</div>';
+    $('listaPend').querySelectorAll('[data-liberar]').forEach((b) => b.onclick = () => liberar(b));
+    $('listaPend').querySelectorAll('[data-recusar]').forEach((b) => b.onclick = () => recusar(b));
+    renderAcessos();
+  }
+
+  async function liberar(b) {
+    b.disabled = true;
+    const { data, error } = await SB.rpc('liberar_pedido', { p_id: Number(b.dataset.liberar) });
+    if (error) { b.disabled = false; return aviso('Não liberou: ' + error.message, true); }
+    const zap = b.dataset.zap;
+    aviso(`Liberado até ${dataBR(data.valido_ate)}.`);
+    if (zap) {
+      const m = $('msg');
+      m.append(' ');
+      const a = document.createElement('a');
+      a.href = zap; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Avisar o aluno no WhatsApp';
+      m.append(a);
+      clearTimeout(aviso.t); aviso.t = setTimeout(() => { m.hidden = true; }, 20000);
+    }
+    carregar();
+  }
+  async function recusar(b) {
+    if (!confirm('Recusar este pedido? Use quando o pagamento não apareceu.')) return;
+    b.disabled = true;
+    const { error } = await SB.rpc('recusar_pedido', { p_id: Number(b.dataset.recusar) });
+    if (error) { b.disabled = false; return aviso('Erro: ' + error.message, true); }
+    aviso('Pedido recusado.'); carregar();
+  }
+
+  function renderAcessos() {
+    const q = $('busca').value.trim().toLowerCase();
+    const hoje = hojeISO();
+    const lista = acessos.filter((a) => !q || a.email.includes(q));
+    $('listaAcessos').innerHTML = lista.length ? lista.map((a) => {
+      const d = diasAte(a.valido_ate);
+      const tag = a.valido_ate < hoje ? '<span class="tag t-off">VENCIDO</span>' : (d <= 5 && a.plano !== 'prova' ? `<span class="tag t-warn">${d === 0 ? 'VENCE HOJE' : 'VENCE EM ' + d + 'D'}</span>` : '<span class="tag t-ok">ATIVO</span>');
+      return `<div class="item"><div class="info">
+          <strong style="font-size:14px;">${esc(a.email)} ${tag}</strong>
+          <span class="mono soft" style="font-size:13px;">${esc(C.simulados[a.simulado].nome)} · ${esc(C.planos[a.plano].nome)} · até ${dataBR(a.valido_ate)}</span>
+        </div><div class="acoes">
+          <button class="b" data-mais="mensal" data-e="${esc(a.email)}" data-s="${a.simulado}">+30 dias</button>
+          <button class="b" data-mais="anual" data-e="${esc(a.email)}" data-s="${a.simulado}">+1 ano</button>
+          ${a.valido_ate >= hoje ? `<button class="b no" data-revogar="1" data-e="${esc(a.email)}" data-s="${a.simulado}">Cortar</button>` : ''}
+        </div></div>`;
+    }).join('') : '<div class="vazio">Nenhum acesso encontrado.</div>';
+    $('listaAcessos').querySelectorAll('[data-mais]').forEach((b) => b.onclick = async () => {
+      if (!confirm(`Somar ${b.dataset.mais === 'mensal' ? '30 dias' : '1 ano'} para ${b.dataset.e}?`)) return;
+      const { data, error } = await SB.rpc('dar_acesso', { p_email: b.dataset.e, p_simulado: b.dataset.s, p_plano: b.dataset.mais });
+      if (error) return aviso('Erro: ' + error.message, true);
+      aviso(`Acesso de ${b.dataset.e} vai até ${dataBR(data.valido_ate)}.`); carregar();
+    });
+    $('listaAcessos').querySelectorAll('[data-revogar]').forEach((b) => b.onclick = async () => {
+      if (!confirm(`Cortar agora o acesso de ${b.dataset.e}? O progresso dele continua guardado.`)) return;
+      const { error } = await SB.rpc('revogar_acesso', { p_email: b.dataset.e, p_simulado: b.dataset.s });
+      if (error) return aviso('Erro: ' + error.message, true);
+      aviso('Acesso cortado.'); carregar();
+    });
+  }
+  $('busca').addEventListener('input', renderAcessos);
+
+  $('formManual').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('mEmail').value.trim().toLowerCase();
+    const { data, error } = await SB.rpc('dar_acesso', { p_email: email, p_simulado: $('mSim').value, p_plano: $('mPlano').value });
+    if (error) return aviso('Erro: ' + error.message, true);
+    aviso(`${email} liberado até ${dataBR(data.valido_ate)}.`);
+    $('mEmail').value = '';
+    carregar();
+  });
+
+  // ---------- importar questões ----------
+  let pacote = null;
+  $('qArquivo').addEventListener('change', async () => {
+    pacote = null; $('qImportar').disabled = true;
+    const f = $('qArquivo').files[0];
+    if (!f) { $('qResumo').textContent = ''; return; }
+    try {
+      const d = JSON.parse(await f.text());
+      if (!d || !C.simulados[d.simulado] || !Array.isArray(d.questoes) || !d.questoes.length) throw new Error('formato');
+      if (d.questoes.some((q) => !q || typeof q.q !== 'string' || !q.cat || !q.type)) throw new Error('questão sem enunciado, categoria ou tipo');
+      pacote = d;
+      $('qResumo').textContent = `Simulado de ${C.simulados[d.simulado].nome}: ${d.questoes.length} questões e ${Object.keys(d.textos || {}).length} textos de apoio.`;
+      $('qImportar').disabled = false;
+    } catch (e) {
+      $('qResumo').textContent = 'Este arquivo não é um arquivo de questões válido (' + e.message + ').';
+    }
+  });
+  $('qImportar').onclick = async () => {
+    if (!pacote) return;
+    const nome = C.simulados[pacote.simulado].nome;
+    if (!confirm(`Substituir as questões do simulado de ${nome} por estas ${pacote.questoes.length}?`)) return;
+    const b = $('qImportar'); b.disabled = true;
+    const passo = (t) => { $('qResumo').textContent = t; };
+    try {
+      passo('Apagando as questões antigas…');
+      let r = await SB.from('questoes').delete().eq('simulado', pacote.simulado);
+      if (r.error) throw r.error;
+      r = await SB.from('textos').delete().eq('simulado', pacote.simulado);
+      if (r.error) throw r.error;
+      const textos = Object.entries(pacote.textos || {}).map(([ref, texto]) => ({ simulado: pacote.simulado, ref, texto }));
+      if (textos.length) { r = await SB.from('textos').insert(textos); if (r.error) throw r.error; }
+      for (let i = 0; i < pacote.questoes.length; i += 100) {
+        passo(`Importando questões… ${i} de ${pacote.questoes.length}`);
+        const lote = pacote.questoes.slice(i, i + 100).map((q, k) => ({ simulado: pacote.simulado, ordem: i + k, dados: q }));
+        r = await SB.from('questoes').insert(lote);
+        if (r.error) throw r.error;
+      }
+      passo(`Pronto: ${pacote.questoes.length} questões do simulado de ${nome} importadas.`);
+      aviso(`Questões do simulado de ${nome} importadas.`);
+    } catch (e) {
+      passo('A importação parou no meio. Clique em Importar de novo para refazer do zero.');
+      aviso('Erro na importação: ' + e.message, true);
+    } finally { b.disabled = false; }
+  };
+
+  setInterval(() => { if (!$('app').hidden && document.visibilityState === 'visible') carregar(); }, 60000);
+  iniciar();
+})();
+</script>
+</body>
+</html>

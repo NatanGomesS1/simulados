@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Bancada — Simulados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E14; --panel:#121821; --wire:#2A3441; --text:#EDEDE5; --soft:#B4BBC6; --muted:#8B93A1;
+    --amber:#F5A623; --amber-ink:#1A1200; --teal:#00D9B5; --teal-ink:#04211C; --red:#FF6B78; --ok-bg:#0D2420;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  a{color:var(--teal);} a:hover{color:#5FF0D6;}
+  .wrap{max-width:460px;margin:0 auto;padding:20px 20px 40px;display:flex;flex-direction:column;gap:22px;min-height:100vh;}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .brand{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.12em;text-decoration:none;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  h1{margin:0;font-family:'JetBrains Mono',monospace;font-size:27px;line-height:1.15;font-weight:800;}
+  h2{margin:0;font-size:16px;font-weight:700;}
+  p{margin:0;}
+  .soft{color:var(--soft);} .muted{color:var(--muted);}
+  .lead{font-size:15px;line-height:1.5;color:var(--soft);}
+  .stack{display:flex;flex-direction:column;gap:12px;}
+  .card{background:var(--panel);border:1px solid var(--wire);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+  .card.destaque{border:2px solid var(--amber);}
+  .card .linha{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .preco{display:flex;align-items:baseline;gap:6px;}
+  .preco b{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:800;}
+  .preco span{font-size:14px;color:var(--soft);}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;border-radius:20px;padding:4px 10px;white-space:nowrap;}
+  .tag.amber{background:var(--amber);color:var(--amber-ink);}
+  .tag.teal{background:var(--teal);color:var(--teal-ink);}
+  .tag.off{color:var(--soft);border:1px solid var(--wire);}
+  .tag.red{color:var(--red);border:1px solid var(--red);}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 16px;border-radius:10px;font-family:Inter,sans-serif;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer;border:none;width:100%;}
+  .btn.primario{background:var(--amber);color:var(--amber-ink);}
+  .btn.primario:hover{color:var(--amber-ink);filter:brightness(1.06);}
+  .btn.contorno{background:transparent;border:1px solid var(--teal);color:var(--teal);}
+  .btn.neutro{background:transparent;border:1px solid var(--wire);color:var(--text);}
+  .btn.zap{background:#1F8F4E;color:#fff;}
+  .btn.zap:hover{color:#fff;filter:brightness(1.08);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-top{font-size:14px;font-weight:600;text-decoration:none;padding:10px 14px;border:1px solid var(--wire);border-radius:8px;color:var(--text);background:transparent;cursor:pointer;font-family:Inter,sans-serif;min-height:44px;}
+  .voltar{align-self:flex-start;display:flex;align-items:center;gap:6px;min-height:44px;font-size:14px;font-weight:600;text-decoration:none;background:none;border:none;color:var(--teal);cursor:pointer;padding:0;font-family:Inter,sans-serif;}
+  .seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;background:var(--panel);border:1px solid var(--wire);border-radius:10px;padding:4px;}
+  .seg button{min-height:44px;border:none;border-radius:7px;background:transparent;color:var(--soft);font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+  .seg button[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink);font-weight:700;}
+  .check{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4;color:#D5D9E0;}
+  .check svg{flex-shrink:0;margin-top:1px;}
+  .campo{display:flex;flex-direction:column;gap:6px;}
+  .campo label{font-size:13px;color:var(--soft);}
+  .campo input{min-height:46px;background:var(--panel);border:1px solid var(--wire);border-radius:8px;color:var(--text);font-size:16px;padding:0 12px;font-family:Inter,sans-serif;width:100%;}
+  .campo input:focus,.btn:focus-visible,.seg button:focus-visible,.btn-top:focus-visible,.voltar:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .dica{font-size:12.5px;color:var(--muted);line-height:1.5;}
+  .aviso{border-radius:12px;padding:14px;font-size:14px;line-height:1.45;display:flex;gap:12px;align-items:flex-start;}
+  .aviso.ok{background:var(--ok-bg);border:1px solid var(--teal);}
+  .aviso.espera{background:var(--panel);border:1px solid var(--wire);}
+  .aviso.erro{background:#2A1216;border:1px solid var(--red);}
+  .aviso.alerta{background:#2A2110;border:1px solid var(--amber);}
+  .ponto{width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:5px;}
+  .resumo{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .passo{display:flex;gap:12px;align-items:flex-start;}
+  .passo .n{flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1px solid var(--wire);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--soft);}
+  .lista-pag{background:var(--panel);border:1px solid var(--wire);border-radius:12px;padding:4px 16px;}
+  .lista-pag .item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--wire);}
+  .lista-pag .item:last-child{border-bottom:none;}
+  .rodape{border-top:1px solid var(--wire);padding-top:16px;display:flex;flex-direction:column;gap:8px;margin-top:auto;}
+  .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .vista{display:none;flex-direction:column;gap:22px;}
+  .vista.ativa{display:flex;}
+  .carregando{padding:40px 0;text-align:center;color:var(--soft);}
+  @media (prefers-reduced-motion: no-preference){ .vista.ativa{animation:surge .18s ease-out;} @keyframes surge{from{opacity:.4}to{opacity:1}} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="brand" href="#planos">PAINEL DE BANCADA</a>
+    <button class="btn-top" id="topoConta" type="button">Entrar</button>
+  </div>
+
+  <div id="erroConfig" class="aviso erro" style="display:none;" role="alert"></div>
+
+  <!-- ================= PLANOS ================= -->
+  <section class="vista" id="v-planos" aria-labelledby="t-planos">
+    <div class="stack" style="gap:10px;">
+      <h1 id="t-planos">Simulado para a Transpetro</h1>
+      <p class="lead">Questões no estilo Cesgranrio e Cespe, com prova cronometrada, caderno de erros e tempo de estudo por matéria.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Escolha o simulado" id="segSimulado"></div>
+    <div class="stack" id="cardsPlanos"></div>
+    <div class="stack">
+      <h2 id="tituloItens"></h2>
+      <div class="stack" style="gap:10px;" id="listaItens"></div>
+    </div>
+    <div class="rodape">
+      <span class="mono soft" style="font-size:12px;">Pix · Cartão de crédito · Débito — via Mercado Pago</span>
+      <p class="dica">Questões originais, no estilo das bancas. Não é material oficial da Transpetro nem da Cesgranrio.</p>
+    </div>
+  </section>
+
+  <!-- ================= PEDIDO ================= -->
+  <section class="vista" id="v-pedido" aria-labelledby="t-pedido">
+    <button class="voltar" type="button" data-ir="planos"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18 9 12l6-6"/></svg>Voltar aos planos</button>
+    <div class="card resumo" style="flex-direction:row;">
+      <div class="stack" style="gap:4px;">
+        <span class="soft" style="font-size:13px;" id="pedSimulado"></span>
+        <span style="font-size:16px;font-weight:700;" id="pedPlano"></span>
+      </div>
+      <span class="mono" style="font-size:20px;font-weight:800;color:var(--amber);" id="pedPreco"></span>
+    </div>
+    <form class="stack" id="formPedido" novalidate>
+      <h2 id="t-pedido">Seus dados</h2>
+      <div class="campo">
+        <label for="fNome">Nome completo</label>
+        <input id="fNome" type="text" autocomplete="name" required maxlength="120">
+      </div>
+      <div class="campo">
+        <label for="fEmail">E-mail (será seu login)</label>
+        <input id="fEmail" type="email" autocomplete="email" required>
+      </div>
+      <div class="campo">
+        <label for="fZap">WhatsApp (para avisarmos da liberação)</label>
+        <input id="fZap" type="tel" autocomplete="tel" inputmode="tel" placeholder="(22) 99999-9999" maxlength="30">
+      </div>
+      <div class="campo" id="campoSenha">
+        <label for="fSenha">Crie uma senha (mínimo 6 caracteres)</label>
+        <input id="fSenha" type="password" autocomplete="new-password" minlength="6">
+      </div>
+      <p class="dica" id="logadoComo" style="display:none;"></p>
+      <div id="erroPedido" class="aviso erro" style="display:none;" role="alert"></div>
+      <button class="btn primario" type="submit" id="btnPedido">Continuar para o pagamento</button>
+      <p class="dica" style="text-align:center;">O pagamento é feito na página do Mercado Pago. Seus dados de cartão não passam por aqui.</p>
+    </form>
+  </section>
+
+  <!-- ================= PAGAR ================= -->
+  <section class="vista" id="v-pagar" aria-labelledby="t-pagar">
+    <div class="stack" style="gap:8px;">
+      <h1 id="t-pagar" style="font-size:24px;">Pedido registrado</h1>
+      <p class="lead" id="pagResumo"></p>
+    </div>
+    <div class="card">
+      <div class="passo"><span class="n">1</span><div class="stack" style="gap:4px;"><strong>Pague no Mercado Pago</strong><span class="soft" style="font-size:14px;">Pix, cartão de crédito ou débito. Abre em outra aba.</span></div></div>
+      <a class="btn primario" id="btnPagar" href="#" target="_blank" rel="noopener">Pagar <span id="pagValor"></span> no Mercado Pago</a>
+    </div>
+    <div class="card">
+      <div class="passo"><span class="n">2</span><div class="stack" style="gap:4px;"><strong>Liberação em até <span class="prazo"></span></strong><span class="soft" style="font-size:14px;">Se quiser agilizar, mande o comprovante pelo WhatsApp.</span></div></div>
+      <a class="btn zap" id="btnZapPedido" href="#" target="_blank" rel="noopener">Enviar comprovante no WhatsApp</a>
+    </div>
+    <div id="statusLiberacao" class="aviso espera" role="status" aria-live="polite">
+      <span class="ponto" aria-hidden="true"></span>
+      <span class="stack" style="gap:3px;"><strong>Aguardando liberação</strong><span class="soft" style="font-size:13px;">Esta tela atualiza sozinha. Pode fechar: quando liberar, é só entrar com seu e-mail e senha.</span></span>
+    </div>
+    <a class="btn contorno" href="#area" id="btnIrArea">Ir para minha área</a>
+  </section>
+
+  <!-- ================= ENTRAR ================= -->
+  <section class="vista" id="v-entrar" aria-labelledby="t-entrar">
+    <div class="stack" style="gap:8px;padding-top:24px;">
+      <h1 id="t-entrar" style="font-family:Inter,sans-serif;font-size:26px;font-weight:700;">Entrar no simulado</h1>
+      <p class="lead" style="font-size:14px;">Use o e-mail e a senha que você criou na compra. Seu progresso aparece em qualquer aparelho.</p>
+    </div>
+    <form class="stack" id="formEntrar" novalidate>
+      <div class="campo"><label for="eEmail">E-mail</label><input id="eEmail" type="email" autocomplete="email" required></div>
+      <div class="campo"><label for="eSenha">Senha</label><input id="eSenha" type="password" autocomplete="current-password" required></div>
+      <div id="erroEntrar" class="aviso erro" style="display:none;" role="alert"></div>
+      <button class="btn primario" type="submit" id="btnEntrar">Entrar</button>
+      <a id="linkEsqueci" href="#" target="_blank" rel="noopener" style="align-self:center;font-size:14px;padding:10px;text-decoration:none;">Esqueci minha senha</a>
+    </form>
+    <div class="rodape" style="flex-direction:row;justify-content:space-between;align-items:center;">
+      <span class="soft" style="font-size:14px;">Ainda não tem acesso?</span>
+      <a href="#planos" class="btn-top" style="border-color:var(--teal);color:var(--teal);font-weight:700;">Ver planos</a>
+    </div>
+  </section>
+
+  <!-- ================= MINHA ÁREA ================= -->
+  <section class="vista" id="v-area" aria-labelledby="t-area">
+    <div id="avisoArea"></div>
+    <h1 id="t-area" style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;"></h1>
+    <div class="stack" id="cardsArea"><div class="carregando">Carregando…</div></div>
+    <div class="stack" style="gap:10px;">
+      <h2>Pedidos e pagamentos</h2>
+      <div class="lista-pag" id="listaPedidos"></div>
+    </div>
+    <button class="btn neutro" type="button" id="btnSair">Sair da conta</button>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+  const C = window.CFG;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const brl = (v) => 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits: Number(v) % 1 ? 2 : 0, maximumFractionDigits: 2});
+  const brl2 = (v) => 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const dataBR = (d) => { const p = String(d).slice(0, 10).split('-'); return `${p[2]}/${p[1]}/${p[0]}`; };
+  const hojeISO = () => { const d = new Date(); const l = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return l.toISOString().slice(0, 10); };
+  const diasAte = (iso) => Math.round((new Date(iso + 'T12:00:00') - new Date(hojeISO() + 'T12:00:00')) / 86400000);
+  const ICON_OK = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D9B5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  const zap = (msg) => `https://wa.me/${C.whatsapp}?text=${encodeURIComponent(msg)}`;
+  const simuladoURL = (s) => `simulado.html?s=${encodeURIComponent(s)}`;
+  const planoAberto = (p) => p !== 'prova' || hojeISO() <= C.dataProva;
+
+  document.querySelectorAll('.prazo').forEach((el) => { el.textContent = C.prazoLiberacao; });
+
+  if (!window.supabase || /COLE_/.test(C.supabaseUrl + C.supabaseAnonKey)) {
+    const e = $('erroConfig');
+    e.style.display = 'flex';
+    e.textContent = !window.supabase
+      ? 'Não foi possível carregar o sistema. Verifique a internet e recarregue a página.'
+      : 'Configuração incompleta: preencha supabaseUrl e supabaseAnonKey no arquivo config.js.';
+  }
+  const SB = (window.supabase && !/COLE_/.test(C.supabaseUrl + C.supabaseAnonKey))
+    ? window.supabase.createClient(C.supabaseUrl, C.supabaseAnonKey)
+    : null;
+
+  let sessao = null;
+  let escolha = { simulado: 'eletrica', plano: 'prova' };
+  let pedidoAtual = null;
+  let poll = null;
+  try {
+    const salvo = JSON.parse(sessionStorage.getItem('escolha') || 'null');
+    if (salvo && C.simulados[salvo.simulado] && C.planos[salvo.plano]) escolha = salvo;
+    pedidoAtual = JSON.parse(sessionStorage.getItem('pedidoAtual') || 'null');
+  } catch (e) {}
+  const salvarEscolha = () => { try { sessionStorage.setItem('escolha', JSON.stringify(escolha)); } catch (e) {} };
+
+  // ---------------- navegação ----------------
+  function ir(v) { if (location.hash !== '#' + v) location.hash = v; else mostrar(); }
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ir]');
+    if (b) { e.preventDefault(); ir(b.dataset.ir); }
+  });
+  window.addEventListener('hashchange', mostrar);
+
+  function mostrar() {
+    let v = (location.hash || '#planos').slice(1);
+    if (!['planos', 'pedido', 'pagar', 'entrar', 'area'].includes(v)) v = 'planos';
+    if (v === 'area' && !sessao) v = 'entrar';
+    if (v === 'pagar' && !pedidoAtual) v = sessao ? 'area' : 'planos';
+    document.querySelectorAll('.vista').forEach((s) => s.classList.toggle('ativa', s.id === 'v-' + v));
+    clearInterval(poll); poll = null;
+    if (v === 'planos') renderPlanos();
+    if (v === 'pedido') renderPedido();
+    if (v === 'pagar') renderPagar();
+    if (v === 'area') renderArea();
+    $('topoConta').textContent = sessao ? 'Minha área' : 'Entrar';
+    window.scrollTo(0, 0);
+  }
+  $('topoConta').onclick = () => ir(sessao ? 'area' : 'entrar');
+
+  // ---------------- planos ----------------
+  function renderPlanos() {
+    $('segSimulado').innerHTML = Object.entries(C.simulados).map(([id, s]) =>
+      `<button type="button" data-sim="${id}" aria-pressed="${id === escolha.simulado}">${esc(s.nome)}</button>`).join('');
+    $('segSimulado').querySelectorAll('button').forEach((b) => b.onclick = () => { escolha.simulado = b.dataset.sim; salvarEscolha(); renderPlanos(); });
+    const s = C.simulados[escolha.simulado];
+    const textos = {
+      prova: 'Acesso completo até o dia da prova. Sem renovação automática.',
+      mensal: '30 dias de acesso. Para continuar, é só renovar pela sua área.',
+      anual: '12 meses pelo preço de 10. Para quem vai seguir nos próximos concursos.'
+    };
+    const botoes = { prova: 'Quero até a prova', mensal: 'Assinar mensal', anual: 'Assinar anual' };
+    $('cardsPlanos').innerHTML = Object.entries(C.planos).filter(([p]) => planoAberto(p)).map(([p, info]) => `
+      <div class="card ${p === 'prova' ? 'destaque' : ''}">
+        <div class="linha"><span style="font-size:17px;font-weight:700;">${esc(info.nome)}</span>${p === 'prova' ? `<span class="tag amber">PROVA EM ${dataBR(C.dataProva).slice(0, 5)}</span>` : ''}</div>
+        <div class="preco"><b>${brl(info.preco)}</b><span>${esc(info.detalhe)}</span></div>
+        <p class="soft" style="font-size:14px;line-height:1.45;">${textos[p]}</p>
+        <button type="button" class="btn ${p === 'prova' ? 'primario' : 'contorno'}" data-plano="${p}">${botoes[p]}</button>
+      </div>`).join('');
+    $('cardsPlanos').querySelectorAll('[data-plano]').forEach((b) => b.onclick = () => { escolha.plano = b.dataset.plano; salvarEscolha(); ir('pedido'); });
+    $('tituloItens').textContent = `O que vem no simulado de ${s.nome}`;
+    $('listaItens').innerHTML = s.itens.map((t) => `<div class="check">${ICON_OK}<span>${esc(t)}</span></div>`).join('');
+  }
+
+  // ---------------- pedido ----------------
+  function renderPedido() {
+    if (!planoAberto(escolha.plano)) escolha.plano = 'mensal';
+    const s = C.simulados[escolha.simulado], p = C.planos[escolha.plano];
+    $('pedSimulado').textContent = 'Simulado de ' + s.nome;
+    $('pedPlano').textContent = p.nome + (escolha.plano === 'prova' ? ' · acesso até ' + dataBR(C.dataProva).slice(0, 5) : escolha.plano === 'mensal' ? ' · 30 dias' : ' · 12 meses');
+    $('pedPreco').textContent = brl(p.preco);
+    $('erroPedido').style.display = 'none';
+    const logado = !!sessao;
+    $('campoSenha').style.display = logado ? 'none' : 'flex';
+    $('logadoComo').style.display = logado ? 'block' : 'none';
+    if (logado) {
+      $('fEmail').value = sessao.user.email;
+      $('fEmail').readOnly = true;
+      $('logadoComo').textContent = 'Você está logado. O acesso será liberado para este e-mail.';
+      const meta = sessao.user.user_metadata || {};
+      if (!$('fNome').value && meta.nome) $('fNome').value = meta.nome;
+      if (!$('fZap').value && meta.whatsapp) $('fZap').value = meta.whatsapp;
+    } else {
+      $('fEmail').readOnly = false;
+    }
+  }
+
+  function erroPedido(msg) { const e = $('erroPedido'); e.textContent = msg; e.style.display = 'flex'; }
+
+  $('formPedido').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (!SB) return erroPedido('O sistema ainda não está configurado.');
+    const nome = $('fNome').value.trim(), email = $('fEmail').value.trim().toLowerCase();
+    const whatsapp = $('fZap').value.trim(), senha = $('fSenha').value;
+    if (nome.length < 2) return erroPedido('Informe seu nome completo.');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return erroPedido('Informe um e-mail válido.');
+    if (!sessao && senha.length < 6) return erroPedido('A senha precisa ter pelo menos 6 caracteres.');
+    const btn = $('btnPedido'); btn.disabled = true; btn.textContent = 'Registrando…';
+    try {
+      if (!sessao) {
+        const r = await SB.auth.signUp({ email, password: senha, options: { data: { nome, whatsapp } } });
+        if (r.error) {
+          if (/already|registered|exists/i.test(r.error.message)) {
+            const l = await SB.auth.signInWithPassword({ email, password: senha });
+            if (l.error) throw new Error('Este e-mail já tem cadastro. Entre com a sua senha (botão Entrar, no topo) e faça o pedido logado.');
+          } else if (/password/i.test(r.error.message)) {
+            throw new Error('Senha fraca: use pelo menos 6 caracteres.');
+          } else { throw r.error; }
+        } else if (!r.data.session) {
+          throw new Error('Cadastro criado, mas o sistema pediu confirmação de e-mail. Fale com a gente no WhatsApp para liberar.');
+        }
+        sessao = (await SB.auth.getSession()).data.session;
+      }
+      const { data, error } = await SB.from('pedidos')
+        .insert({ nome, whatsapp: whatsapp || null, simulado: escolha.simulado, plano: escolha.plano })
+        .select('id, simulado, plano, valor, criado_em').single();
+      if (error) throw error;
+      pedidoAtual = data;
+      try { sessionStorage.setItem('pedidoAtual', JSON.stringify(data)); } catch (e) {}
+      ir('pagar');
+    } catch (e) {
+      erroPedido(e.message || 'Não foi possível registrar o pedido. Tente de novo.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Continuar para o pagamento';
+    }
+  });
+
+  // ---------------- pagar ----------------
+  function renderPagar() {
+    const s = C.simulados[pedidoAtual.simulado], p = C.planos[pedidoAtual.plano];
+    $('pagResumo').textContent = `Simulado de ${s.nome} · ${p.nome} · pedido nº ${pedidoAtual.id}`;
+    $('pagValor').textContent = brl2(pedidoAtual.valor);
+    const link = (C.links[pedidoAtual.simulado] || {})[pedidoAtual.plano] || '';
+    const b = $('btnPagar');
+    if (/^https?:\/\//.test(link)) { b.href = link; b.removeAttribute('aria-disabled'); b.style.opacity = ''; }
+    else { b.href = zap(`Olá! Quero pagar o pedido nº ${pedidoAtual.id}.`); b.textContent = 'Pedir o link de pagamento no WhatsApp'; }
+    const email = sessao ? sessao.user.email : '';
+    $('btnZapPedido').href = zap(`Olá! Paguei o pedido nº ${pedidoAtual.id} (Simulado de ${s.nome} · ${p.nome} · ${brl2(pedidoAtual.valor)}). Meu e-mail de acesso: ${email}. Segue o comprovante:`);
+    $('statusLiberacao').className = 'aviso espera';
+    verificarLiberacao();
+    poll = setInterval(verificarLiberacao, 15000);
+  }
+
+  async function verificarLiberacao() {
+    if (!SB || !sessao || !pedidoAtual) return;
+    const { data } = await SB.from('pedidos').select('status').eq('id', pedidoAtual.id).maybeSingle();
+    if (!data) return;
+    const st = $('statusLiberacao');
+    if (data.status === 'liberado') {
+      clearInterval(poll); poll = null;
+      st.className = 'aviso ok';
+      st.innerHTML = `${ICON_OK}<span class="stack" style="gap:8px;"><strong>Acesso liberado!</strong><a class="btn primario" href="${simuladoURL(pedidoAtual.simulado)}">Abrir simulado</a></span>`;
+      try { sessionStorage.removeItem('pedidoAtual'); } catch (e) {}
+    } else if (data.status === 'recusado') {
+      clearInterval(poll); poll = null;
+      st.className = 'aviso erro';
+      st.innerHTML = `<span class="stack" style="gap:6px;"><strong>Não encontramos o pagamento deste pedido.</strong><span style="font-size:13px;">Se você já pagou, mande o comprovante no WhatsApp que a gente resolve.</span></span>`;
+    }
+  }
+
+  // ---------------- entrar ----------------
+  $('linkEsqueci').href = zap('Olá! Esqueci a senha do simulado. Meu e-mail de acesso é: ');
+  $('formEntrar').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const err = $('erroEntrar'); err.style.display = 'none';
+    if (!SB) { err.textContent = 'O sistema ainda não está configurado.'; err.style.display = 'flex'; return; }
+    const btn = $('btnEntrar'); btn.disabled = true; btn.textContent = 'Entrando…';
+    const { error } = await SB.auth.signInWithPassword({ email: $('eEmail').value.trim().toLowerCase(), password: $('eSenha').value });
+    btn.disabled = false; btn.textContent = 'Entrar';
+    if (error) {
+      err.textContent = /invalid/i.test(error.message) ? 'E-mail ou senha incorretos.' : 'Não foi possível entrar: ' + error.message;
+      err.style.display = 'flex'; return;
+    }
+    sessao = (await SB.auth.getSession()).data.session;
+    const volta = new URLSearchParams(location.search).get('volta');
+    if (volta && /^simulado\.html\?s=\w+$/.test(volta)) { location.href = volta; return; }
+    ir('area');
+  });
+
+  // ---------------- minha área ----------------
+  async function renderArea() {
+    const meta = sessao.user.user_metadata || {};
+    $('t-area').textContent = 'Olá' + (meta.nome ? ', ' + meta.nome.split(' ')[0] : '') + '!';
+    $('avisoArea').innerHTML = '';
+    const [ac, pe] = await Promise.all([
+      SB.from('acessos').select('*'),
+      SB.from('pedidos').select('id, criado_em, simulado, plano, valor, status').order('criado_em', { ascending: false })
+    ]);
+    if (ac.error || pe.error) {
+      $('cardsArea').innerHTML = '<div class="aviso erro">Não foi possível carregar seus dados. Recarregue a página.</div>';
+      return;
+    }
+    const acessos = Object.fromEntries((ac.data || []).map((a) => [a.simulado, a]));
+    const pendentes = (pe.data || []).filter((p) => p.status === 'pendente');
+    $('cardsArea').innerHTML = Object.entries(C.simulados).map(([id, s]) => {
+      const a = acessos[id];
+      const pend = pendentes.find((p) => p.simulado === id);
+      let tag, corpo = '', botoes = '';
+      if (a && a.valido_ate >= hojeISO()) {
+        const d = diasAte(a.valido_ate);
+        tag = '<span class="tag teal">ATIVO</span>';
+        corpo = `<div class="grid2" style="font-size:13px;"><div class="stack" style="gap:3px;"><span class="soft">Plano</span><span style="font-weight:600;">${esc(C.planos[a.plano].nome)}</span></div><div class="stack" style="gap:3px;"><span class="soft">Acesso até</span><span class="mono" style="font-weight:700;">${dataBR(a.valido_ate)}</span></div></div>`;
+        if (d <= 5 && a.plano !== 'prova') corpo += `<div class="aviso alerta" style="font-size:13px;">Seu acesso vence ${d === 0 ? 'hoje' : `em ${d} dia${d > 1 ? 's' : ''}`}. Renove para não perder o ritmo.</div>`;
+        botoes = `<a class="btn primario" href="${simuladoURL(id)}">Abrir simulado</a>`;
+        if (a.plano !== 'prova') botoes += `<button type="button" class="btn contorno" data-renovar="${id}" data-plano="${a.plano}">Renovar ${esc(C.planos[a.plano].nome.toLowerCase())}</button>`;
+      } else if (a) {
+        tag = '<span class="tag red">VENCIDO</span>';
+        corpo = `<p class="soft" style="font-size:14px;line-height:1.45;">Venceu em ${dataBR(a.valido_ate)}. Seu progresso continua guardado.</p>`;
+        botoes = `<button type="button" class="btn primario" data-renovar="${id}" data-plano="mensal">Renovar mensal · ${brl(C.planos.mensal.preco)}</button><button type="button" class="btn contorno" data-renovar="${id}" data-plano="anual">Anual · ${brl(C.planos.anual.preco)}</button>`;
+      } else if (pend) {
+        tag = '<span class="tag amber">AGUARDANDO</span>';
+        corpo = `<p class="soft" style="font-size:14px;line-height:1.45;">Pedido nº ${pend.id} aguardando liberação (até ${esc(C.prazoLiberacao)} após o pagamento).</p>`;
+        botoes = `<button type="button" class="btn contorno" data-pagar="${pend.id}">Ver como pagar</button>`;
+      } else {
+        tag = '<span class="tag off">SEM ACESSO</span>';
+        botoes = `<button type="button" class="btn contorno" data-ver="${id}">Ver planos</button>`;
+      }
+      return `<div class="card"><div class="linha"><span style="font-size:17px;font-weight:700;">${esc(s.nome)}</span>${tag}</div>${corpo}${botoes}</div>`;
+    }).join('');
+    $('cardsArea').querySelectorAll('[data-renovar]').forEach((b) => b.onclick = () => { escolha = { simulado: b.dataset.renovar, plano: b.dataset.plano }; salvarEscolha(); ir('pedido'); });
+    $('cardsArea').querySelectorAll('[data-ver]').forEach((b) => b.onclick = () => { escolha.simulado = b.dataset.ver; salvarEscolha(); ir('planos'); });
+    $('cardsArea').querySelectorAll('[data-pagar]').forEach((b) => b.onclick = () => {
+      pedidoAtual = (pe.data || []).find((p) => String(p.id) === b.dataset.pagar);
+      try { sessionStorage.setItem('pedidoAtual', JSON.stringify(pedidoAtual)); } catch (e) {}
+      ir('pagar');
+    });
+    const st = { pendente: ['Aguardando', 'var(--amber)'], liberado: ['Liberado', 'var(--teal)'], recusado: ['Não confirmado', 'var(--red)'] };
+    $('listaPedidos').innerHTML = (pe.data || []).length
+      ? pe.data.map((p) => `<div class="item"><span class="stack" style="gap:3px;"><span style="font-size:14px;font-weight:600;">${esc(C.simulados[p.simulado].nome)} · ${esc(C.planos[p.plano].nome)}</span><span class="mono soft" style="font-size:12px;">${new Date(p.criado_em).toLocaleDateString('pt-BR')} · nº ${p.id}</span></span><span class="stack" style="gap:3px;align-items:flex-end;"><span class="mono" style="font-size:14px;font-weight:700;">${brl2(p.valor)}</span><span style="font-size:12px;color:${st[p.status][1]};">${st[p.status][0]}</span></span></div>`).join('')
+      : '<div class="item"><span class="soft" style="font-size:14px;">Nenhum pedido ainda.</span></div>';
+  }
+
+  $('btnSair').onclick = async () => { if (SB) await SB.auth.signOut(); sessao = null; ir('planos'); };
+
+  // ---------------- início ----------------
+  (async () => {
+    if (SB) {
+      sessao = (await SB.auth.getSession()).data.session;
+      SB.auth.onAuthStateChange((_e, s) => { sessao = s; $('topoConta').textContent = sessao ? 'Minha área' : 'Entrar'; });
+    }
+    mostrar();
+  })();
+})();
+</script>
+</body>
+</html>

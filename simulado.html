@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#0A0E14;
+    --panel:#121821;
+    --panel-2:#171f2b;
+    --wire:#2A3441;
+    --amber:#F5A623;
+    --amber-dim:#8a5f18;
+    --teal:#00D9B5;
+    --red:#FF4757;
+    --text:#EDEDE5;
+    --muted:#8B93A1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, #101722 0%, transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:20px;
+    min-height:100vh;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+
+  /* Header readout */
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--wire);
+    padding-bottom:16px;margin-bottom:20px;flex-wrap:wrap;gap:12px;
+  }
+  .brand-eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.18em;color:var(--amber);
+    text-transform:uppercase;margin-bottom:4px;
+  }
+  h1{
+    font-family:'JetBrains Mono',monospace;
+    font-size:22px;font-weight:800;margin:0;letter-spacing:-0.01em;
+  }
+  .digital-readout{
+    font-family:'JetBrains Mono',monospace;
+    background:#05070a;
+    border:1px solid var(--wire);
+    border-radius:6px;
+    padding:8px 14px;
+    text-align:right;
+    min-width:170px;
+  }
+  .digital-readout .label{font-size:9px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;}
+  .digital-readout .value{font-size:24px;font-weight:700;color:var(--teal);text-shadow:0 0 12px rgba(0,217,181,.4);}
+
+  /* Breaker panel */
+  .breaker-panel{
+    background:var(--panel);
+    border:1px solid var(--wire);
+    border-radius:10px;
+    padding:18px;
+    margin-bottom:18px;
+  }
+  .breaker-panel .title{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+    letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;
+  }
+  .breakers{display:flex;flex-wrap:wrap;gap:10px;}
+  .breaker{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel-2);
+    border:1px solid var(--wire);
+    border-radius:8px;
+    padding:9px 12px;
+    cursor:pointer;
+    user-select:none;
+    transition:border-color .15s, background .15s;
+    font-size:13px;
+  }
+  .breaker:hover{border-color:var(--amber-dim);}
+  .breaker.on{border-color:var(--teal);background:#0d2420;}
+  .switch{
+    width:26px;height:14px;border-radius:3px;background:#3a4553;position:relative;flex-shrink:0;
+    transition:background .15s;
+  }
+  .switch::after{
+    content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:2px;
+    background:#0A0E14;transition:transform .15s, background .15s;
+  }
+  .breaker.on .switch{background:var(--teal);}
+  .breaker.on .switch::after{transform:translateX(12px);background:#05070a;}
+  .breaker .name{font-weight:600;}
+  .breaker .stat{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+
+  .banca-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .banca-pill{
+    font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;border-radius:20px;
+    border:1px solid var(--wire);cursor:pointer;color:var(--muted);
+  }
+  .banca-pill.on{border-color:var(--amber);color:var(--amber);background:rgba(245,166,35,.08);}
+
+  .mode-row{display:flex;gap:8px;margin-top:16px;}
+  .mode-pill{
+    flex:1;text-align:center;
+    font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px;border-radius:8px;
+    border:1px solid var(--wire);cursor:pointer;color:var(--muted);
+  }
+  .mode-pill.on{border-color:var(--teal);color:var(--teal);background:rgba(0,217,181,.08);}
+
+  .exam-config{
+    display:none;margin-top:14px;background:var(--panel-2);border:1px solid var(--wire);border-radius:8px;padding:14px;
+    gap:14px;flex-wrap:wrap;
+  }
+  .exam-config.show{display:flex;}
+  .exam-config .field{display:flex;flex-direction:column;gap:6px;}
+  .exam-config label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .exam-config select{
+    background:var(--panel);border:1px solid var(--wire);border-radius:6px;color:var(--text);
+    font-family:'JetBrains Mono',monospace;font-size:13px;padding:7px 10px;
+  }
+
+  .timer-box{
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;
+    padding:4px 10px;border-radius:6px;border:1px solid var(--wire);color:var(--teal);
+  }
+  .timer-box.warn{color:var(--amber);border-color:var(--amber);}
+  .timer-box.crit{color:var(--red);border-color:var(--red);animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+  .end-exam-btn{
+    background:var(--panel-2);border:1px solid var(--red);color:var(--red);
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+    padding:6px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;
+  }
+
+  .resume-banner{
+    display:none;background:#0d2420;border:1px solid var(--teal);border-radius:8px;
+    padding:14px 16px;margin-bottom:18px;
+  }
+  .resume-banner.show{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .resume-banner .info{font-size:13px;color:var(--text);}
+  .resume-banner .info b{color:var(--teal);}
+  .resume-banner .actions{display:flex;gap:8px;}
+  .resume-btn{
+    background:var(--teal);border:none;color:#04211c;font-weight:700;
+    font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 14px;border-radius:6px;cursor:pointer;
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .discard-btn{
+    background:transparent;border:1px solid var(--wire);color:var(--muted);
+    font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 14px;border-radius:6px;cursor:pointer;
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+
+  .back-btn{
+    font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--teal);
+    cursor:pointer;background:var(--panel-2);border:1px solid var(--teal);border-radius:6px;
+    padding:7px 14px;display:inline-flex;align-items:center;gap:6px;letter-spacing:.03em;
+  }
+  .back-btn:active{background:rgba(0,217,181,.15);}
+  .back-btn:hover{background:rgba(0,217,181,.1);}
+
+  .dash-toggle-btn{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+    background:var(--panel);border:1px solid var(--wire);border-radius:6px;padding:8px 12px;cursor:pointer;
+    white-space:nowrap;
+  }
+  .dash-toggle-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+  .dashboard{display:none;}
+  .dashboard.active{display:block;}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px;}
+  .dash-stat{background:var(--panel-2);border:1px solid var(--wire);border-radius:8px;padding:14px;}
+  .dash-stat .label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .dash-stat .value{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:var(--teal);margin-top:4px;}
+
+  .bar-row{margin-bottom:10px;}
+  .bar-row .bar-label{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;}
+  .bar-row .bar-label .cat-n{color:var(--text);}
+  .bar-row .bar-label .cat-p{font-family:'JetBrains Mono',monospace;color:var(--muted);}
+  .bar-track{height:8px;background:var(--wire);border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+  .bar-fill.good{background:var(--teal);}
+  .bar-fill.mid{background:var(--amber);}
+  .bar-fill.low{background:var(--red);}
+
+  .session-log-row{
+    display:flex;justify-content:space-between;align-items:center;font-size:12.5px;
+    padding:9px 0;border-bottom:1px solid var(--wire);
+  }
+  .session-log-row:last-child{border-bottom:none;}
+  .session-log-row .sdate{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .session-log-row .sscore{font-family:'JetBrains Mono',monospace;font-weight:700;}
+
+  .backup-row{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;}
+  .backup-btn{
+    background:var(--panel-2);border:1px solid var(--wire);color:var(--text);
+    font-family:'JetBrains Mono',monospace;font-size:11px;padding:9px 14px;border-radius:6px;cursor:pointer;
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .backup-btn:hover{border-color:var(--teal);color:var(--teal);}
+  .storage-note{
+    font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;
+    border-left:2px solid var(--wire);padding-left:10px;
+  }
+
+  .start-btn{
+    margin-top:16px;width:100%;
+    background:linear-gradient(180deg,#F5A623,#d68b0f);
+    border:none;border-radius:8px;
+    color:#1a1200;font-family:'JetBrains Mono',monospace;font-weight:700;
+    font-size:14px;letter-spacing:.04em;text-transform:uppercase;
+    padding:13px;cursor:pointer;
+  }
+  .start-btn:active{transform:translateY(1px);}
+  .start-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* Question card */
+  .card{
+    background:var(--panel);border:1px solid var(--wire);border-radius:10px;
+    padding:22px;display:none;
+  }
+  .card.active{display:block;}
+  .q-meta{
+    margin-bottom:14px;
+  }
+  .q-meta-top{
+    margin-bottom:8px;
+  }
+  .q-meta-bottom{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 10px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.06em;
+  }
+  .q-meta-bottom .left-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+  .q-meta-bottom .right-group{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .q-meta .tag{
+    background:var(--panel-2);border:1px solid var(--wire);border-radius:4px;padding:3px 8px;color:var(--amber);white-space:nowrap;
+  }
+  .progress-bar{height:4px;background:var(--wire);border-radius:2px;overflow:hidden;margin-bottom:18px;}
+  .progress-fill{height:100%;background:var(--teal);transition:width .3s;}
+  .text-passage{
+    background:var(--panel-2);border:1px solid var(--wire);border-left:3px solid var(--amber);
+    border-radius:6px;padding:14px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.6;color:var(--muted);
+  }
+  .text-passage .tp-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .q-text{font-size:16px;line-height:1.55;margin-bottom:18px;}
+  .options{display:flex;flex-direction:column;gap:8px;}
+  .opt{
+    text-align:left;background:var(--panel-2);border:1px solid var(--wire);border-radius:8px;
+    padding:12px 14px;cursor:pointer;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .opt:hover:not(.locked){border-color:var(--amber-dim);}
+  .opt .letter{
+    font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--muted);flex-shrink:0;
+  }
+  .opt.correct{border-color:var(--teal);background:#0d2420;}
+  .opt.correct .letter{color:var(--teal);}
+  .opt.wrong{border-color:var(--red);background:#2a1216;}
+  .opt.wrong .letter{color:var(--red);}
+  .opt.locked{cursor:default;pointer-events:none;}
+
+  .feedback{margin-top:16px;padding:14px;border-radius:8px;border:1px solid var(--wire);background:var(--panel-2);display:none;}
+  .feedback.show{display:block;}
+  .feedback .verdict{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.05em;margin-bottom:6px;}
+  .feedback.ok .verdict{color:var(--teal);}
+  .feedback.bad .verdict{color:var(--red);}
+  .feedback .exp{font-size:13.5px;color:var(--muted);line-height:1.5;}
+
+  .next-btn{
+    margin-top:16px;background:var(--panel-2);border:1px solid var(--teal);color:var(--teal);
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;
+    padding:11px 18px;border-radius:8px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;
+    display:none;
+  }
+  .next-btn.show{display:inline-block;}
+
+  /* Summary */
+  .summary{display:none;text-align:center;padding:30px 10px;}
+  .summary.active{display:block;}
+  .summary .big-score{font-family:'JetBrains Mono',monospace;font-size:52px;font-weight:800;color:var(--teal);text-shadow:0 0 20px rgba(0,217,181,.35);}
+  .summary .sub{color:var(--muted);font-size:14px;margin-top:6px;}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:22px;text-align:left;}
+  .summary-item{background:var(--panel-2);border:1px solid var(--wire);border-radius:8px;padding:12px;}
+  .summary-item .cat{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .summary-item .val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;margin-top:4px;}
+  .summary-item .val.good{color:var(--teal);}
+  .summary-item .val.mid{color:var(--amber);}
+  .summary-item .val.low{color:var(--red);}
+
+  .history-panel{margin-top:18px;background:var(--panel);border:1px solid var(--wire);border-radius:10px;padding:18px;}
+  .history-panel .title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;}
+  .hist-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--wire);}
+  .hist-row:last-child{border-bottom:none;}
+  .hist-row .cat-name{color:var(--text);}
+  .hist-row .cat-score{font-family:'JetBrains Mono',monospace;color:var(--muted);}
+
+  .reset-link{
+    display:inline-block;margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:var(--muted);cursor:pointer;text-decoration:underline;
+  }
+
+
+  /* ---------- Tempo de estudo, estudo teórico e caderno de erros ---------- */
+  .top-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .dash-toggle-btn.live{border-color:var(--amber);color:var(--amber);}
+
+  .mode-row{flex-wrap:wrap;}
+  .mode-pill{min-width:84px;}
+  .mode-note{display:none;font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5;}
+  .mode-note.show{display:block;}
+
+  .err-box{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--wire);}
+  .err-box.show{display:block;}
+  .err-box .err-status{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--amber);line-height:1.5;}
+  .err-box textarea{
+    display:block;width:100%;margin-top:8px;min-height:58px;resize:vertical;
+    background:var(--panel);border:1px solid var(--wire);border-radius:6px;color:var(--text);
+    font-family:'Inter',sans-serif;font-size:13px;line-height:1.45;padding:8px 10px;
+  }
+
+  .time-split{margin-bottom:18px;}
+  .time-split .split-track{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--wire);}
+  .time-split .split-sim{background:var(--teal);}
+  .time-split .split-teo{background:var(--amber);}
+  .time-split .split-legend{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .time-split .split-legend b{font-weight:700;}
+  .empty-note{color:var(--muted);font-size:13px;line-height:1.5;}
+
+  .donut-wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+  .donut-wrap svg{width:150px;height:150px;flex-shrink:0;margin:0 auto;}
+  .donut-legend{flex:1;min-width:220px;}
+  .leg-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;}
+  .leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+  .leg-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .leg-val{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:11.5px;white-space:nowrap;}
+
+  .days-chart{display:flex;align-items:flex-end;gap:4px;}
+  .day-col{flex:1;min-width:0;}
+  .day-stack{height:100px;display:flex;flex-direction:column;justify-content:flex-end;}
+  .day-seg{width:100%;}
+  .day-seg.teo{background:var(--amber);border-radius:2px 2px 0 0;}
+  .day-seg.sim{background:var(--teal);}
+  .day-seg.sim:first-child{border-radius:2px 2px 0 0;}
+  .day-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-align:center;margin-top:4px;}
+  .day-col.today .day-lbl{color:var(--text);font-weight:700;}
+  .chart-key{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .chart-key i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+
+  .cross-row{display:grid;grid-template-columns:1fr 64px 56px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--wire);font-size:12.5px;}
+  .cross-row:last-child{border-bottom:none;}
+  .cross-row.head{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:0;}
+  .cross-name{min-width:0;}
+  .cross-num{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;}
+  .cross-tag{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;margin-top:2px;}
+  .cross-tag.good{color:var(--teal);} .cross-tag.mid{color:var(--amber);} .cross-tag.low{color:var(--red);} .cross-tag.muted{color:var(--muted);}
+
+  .err-cat{border-bottom:1px solid var(--wire);}
+  .err-cat:last-of-type{border-bottom:none;}
+  .err-cat summary{display:flex;justify-content:space-between;gap:10px;cursor:pointer;padding:10px 0;font-size:13px;list-style:none;}
+  .err-cat summary::-webkit-details-marker{display:none;}
+  .err-cat summary .cnt{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:11.5px;white-space:nowrap;}
+  .err-item{background:var(--panel-2);border:1px solid var(--wire);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+  .err-item .err-q{font-size:12.5px;line-height:1.5;}
+  .err-item .err-meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:6px;}
+  .err-item .err-meta.due{color:var(--amber);}
+  .err-item .err-note{font-size:12px;line-height:1.45;color:var(--text);margin-top:6px;border-left:2px solid var(--amber);padding-left:8px;white-space:pre-wrap;}
+
+  .sw-box{background:var(--panel-2);border:1px solid var(--wire);border-radius:8px;padding:14px;margin-bottom:16px;}
+  .sw-display{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:800;color:var(--teal);letter-spacing:.02em;}
+  .sw-display.live{text-shadow:0 0 14px rgba(0,217,181,.4);}
+  .sw-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .sw-actions button:disabled{opacity:.4;cursor:not-allowed;}
+  .sw-hint{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;}
+  .study-today{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;}
+  .study-today b{color:var(--text);}
+
+  .study-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+  .study-form .field{display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .study-form .field.wide{grid-column:1 / -1;}
+  .study-form label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .study-form select,.study-form input{
+    width:100%;background:var(--panel);border:1px solid var(--wire);border-radius:6px;color:var(--text);
+    font-family:'JetBrains Mono',monospace;font-size:13px;padding:9px 10px;color-scheme:dark;
+  }
+  .study-form select:focus,.study-form input:focus,.err-box textarea:focus{outline:2px solid var(--teal);outline-offset:1px;}
+
+  .log-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--wire);}
+  .log-row:last-child{border-bottom:none;}
+  .log-row .log-main{min-width:0;font-size:13px;line-height:1.4;}
+  .log-row .log-sub{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:2px;}
+  .log-row .log-min{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--amber);white-space:nowrap;}
+  .log-del{background:transparent;border:1px solid var(--wire);color:var(--muted);border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:15px;line-height:1;flex-shrink:0;}
+  .log-del:hover{border-color:var(--red);color:var(--red);}
+
+
+  /* ---------- Sincronização entre aparelhos ---------- */
+  .sync-intro{font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+  .sync-repo{font-size:13px;margin-bottom:12px;overflow-wrap:anywhere;}
+  .sync-repo b{color:var(--teal);font-family:'JetBrains Mono',monospace;font-weight:700;}
+  .sync-choice{margin-top:14px;padding:12px;border:1px solid var(--amber);border-radius:8px;background:rgba(245,166,35,.06);}
+  .sync-choice p{margin:0 0 10px;font-size:12.5px;line-height:1.5;}
+  .sync-choice .backup-row{margin-top:0;}
+  a.discard-btn{display:inline-block;text-decoration:none;}
+  #syncStatus{display:none;margin-top:12px;}
+
+
+  #portao{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  #portao .caixa{max-width:420px;width:100%;background:var(--panel);border:1px solid var(--wire);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px;}
+  #portao h2{margin:0;font-size:22px;line-height:1.25;}
+  #portao p{margin:0;font-size:15px;line-height:1.5;color:#B4BBC6;}
+  #portao a.btn{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:10px;font-weight:700;font-size:15px;text-decoration:none;}
+  #portao a.btn.a{background:var(--amber);color:#1a1200;}
+  #portao a.btn.b{border:1px solid var(--teal);color:var(--teal);}
+  footer{text-align:center;color:var(--muted);font-size:11px;margin-top:24px;font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+<div id="portao" role="status" aria-live="polite"><div class="caixa"><p>Carregando o simulado…</p></div></div>
+<div class="wrap" id="appWrap" style="display:none;">
+
+  <header>
+    <div>
+      <div class="brand-eyebrow" id="simEyebrow"></div>
+      <h1 id="simTitulo"></h1>
+    </div>
+    <div class="digital-readout">
+      <div class="label">Aproveitamento geral</div>
+      <div class="value" id="overallStat">--%</div>
+    </div>
+  </header>
+
+  <div class="top-actions">
+    <a class="dash-toggle-btn" href="index.html#area" style="text-decoration:none;">← Minha área</a>
+    <button class="dash-toggle-btn" id="studyToggleBtn">⏱ Estudo teórico</button>
+    <button class="dash-toggle-btn" id="dashToggleBtn">📊 Ver dashboard completo</button>
+    <button class="dash-toggle-btn" id="syncTopBtn">☁ Sincronizar aparelhos</button>
+  </div>
+
+  <div class="dashboard" id="dashboardPanel">
+    <div class="dash-grid" id="dashStatsGrid"></div>
+    <div class="breaker-panel">
+      <div class="title">Tempo de estudo</div>
+      <div class="dash-grid" id="dashTimeGrid"></div>
+      <div id="dashSplit"></div>
+      <div class="donut-wrap" id="dashDonut"></div>
+    </div>
+    <div class="breaker-panel">
+      <div class="title">Últimos 14 dias</div>
+      <div id="dashDays"></div>
+    </div>
+    <div class="breaker-panel">
+      <div class="title">Tempo x acerto por matéria</div>
+      <div id="dashCross"></div>
+    </div>
+    <div class="breaker-panel">
+      <div class="title">Caderno de erros</div>
+      <div id="dashErrors"></div>
+    </div>
+    <div class="breaker-panel">
+      <div class="title">Desempenho por categoria</div>
+      <div id="dashCatBars"></div>
+    </div>
+    <div class="breaker-panel">
+      <div class="title">Desempenho por banca</div>
+      <div id="dashBancaBars"></div>
+    </div>
+    <div class="breaker-panel">
+      <div class="title">Últimas sessões</div>
+      <div id="dashSessionLog"></div>
+      <span class="reset-link" id="resetHistory">Zerar todo o histórico</span>
+    </div>
+    <div class="breaker-panel" id="syncPanel">
+      <div class="title">Sincronização entre aparelhos</div>
+      <div class="sync-intro">Seu progresso fica salvo na sua conta e aparece igual no celular e no notebook. Sincroniza sozinho ao abrir, enquanto você estuda e ao sair.</div>
+      <div id="syncOff" style="display:none;"></div>
+      <div id="syncOn" style="display:none;">
+        <div class="sync-repo">Conta: <b id="syncRepoName"></b></div>
+        <div class="backup-row">
+          <button class="resume-btn" id="syncNowBtn">Sincronizar agora</button>
+          <button class="discard-btn" id="syncDisconnectBtn">Sair da conta</button>
+        </div>
+        <div class="sync-choice" id="syncChoice" style="display:none;">
+          <p>Já existe progresso na nuvem e também neste aparelho. Se este aparelho tem respostas que nunca foram enviadas, junte os dois. Se ele tem os mesmos dados que já estão na nuvem (por exemplo, vieram de um backup importado), fique só com a nuvem para não contar em dobro.</p>
+          <div class="backup-row">
+            <button class="resume-btn" data-choice="join">Juntar os dois</button>
+            <button class="discard-btn" data-choice="cloud">Ficar só com a nuvem</button>
+            <button class="discard-btn" data-choice="local">Ficar só com este aparelho</button>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="storage-note" id="syncStatus"></div>
+    </div>
+    <div class="breaker-panel">
+      <div class="title">Backup do progresso</div>
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+        Sempre que você baixar uma versão atualizada deste simulado (com mais questões), o navegador pode salvá-la como um arquivo novo — e um arquivo novo começa com o progresso zerado. Exporte um backup aqui antes de trocar de arquivo, e importe do outro lado pra continuar de onde parou.
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="resume-btn" id="exportBtn">⬇ Exportar backup</button>
+        <button class="discard-btn" id="importBtn">⬆ Importar backup</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;">
+      </div>
+    </div>
+    <button class="start-btn" id="closeDashBtn" style="margin-top:4px;">Fechar dashboard ▸</button>
+  </div>
+
+  <div class="dashboard" id="studyPanel">
+    <div class="breaker-panel">
+      <div class="title">Estudo fora do simulado</div>
+      <div class="study-today" id="studyToday"></div>
+      <div class="sw-box">
+        <div class="sw-display" id="swDisplay">00:00:00</div>
+        <div class="sw-actions">
+          <button class="resume-btn" id="swToggleBtn">Iniciar cronômetro</button>
+          <button class="discard-btn" id="swStopBtn" disabled>Parar e usar o tempo</button>
+        </div>
+        <div class="sw-hint" id="swHint">O cronômetro segue contando com a tela apagada ou em outro app. Se preferir, digite os minutos direto abaixo.</div>
+      </div>
+      <div class="study-form">
+        <div class="field">
+          <label for="stCat">Matéria</label>
+          <select id="stCat"></select>
+        </div>
+        <div class="field">
+          <label for="stTipo">Tipo de estudo</label>
+          <select id="stTipo"></select>
+        </div>
+        <div class="field">
+          <label for="stMin">Minutos</label>
+          <input type="number" id="stMin" inputmode="numeric" min="1" max="720" placeholder="Ex.: 40">
+        </div>
+        <div class="field">
+          <label for="stDate">Data</label>
+          <input type="date" id="stDate">
+        </div>
+        <div class="field wide">
+          <label for="stObs">Observação (opcional)</label>
+          <input type="text" id="stObs" maxlength="120" placeholder="Ex.: videoaula 4, partida de motores">
+        </div>
+      </div>
+      <button class="start-btn" id="stAddBtn">Lançar estudo ▸</button>
+    </div>
+    <div class="breaker-panel">
+      <div class="title">Lançamentos recentes</div>
+      <div id="studyLogList"></div>
+    </div>
+    <button class="start-btn" id="closeStudyBtn" style="margin-top:4px;">Voltar ao menu ▸</button>
+  </div>
+
+  <div class="breaker-panel" id="setupPanel">
+    <div class="resume-banner" id="resumeBanner">
+      <div class="info">Você tem um simulado em andamento — parou na questão <b id="resumeProgress">--</b>.</div>
+      <div class="actions">
+        <button class="resume-btn" id="resumeBtn">Continuar de onde parei ▸</button>
+        <button class="discard-btn" id="discardBtn">Começar novo</button>
+      </div>
+    </div>
+    <div class="title">Selecione os disjuntores (categorias)</div>
+    <div class="breakers" id="breakerList"></div>
+
+    <div class="title" style="margin-top:16px;">Banca</div>
+    <div class="banca-row" id="bancaRow"></div>
+    </div>
+
+    <div class="title" style="margin-top:16px;">Modo de estudo</div>
+    <div class="mode-row" id="modeRow">
+      <div class="mode-pill on" data-mode="livre">Treino livre<br><span style="font-size:9px;opacity:.7;">sem tempo, revisa no seu ritmo</span></div>
+      <div class="mode-pill" data-mode="prova">Prova completa<br><span style="font-size:9px;opacity:.7;">cronometrada, simula o dia real</span></div>
+      <div class="mode-pill" data-mode="erros">Caderno de erros<br><span style="font-size:9px;opacity:.7;" id="errPillCount">refaz só as que você errou</span></div>
+    </div>
+    <div class="mode-note" id="errModeNote">O caderno ignora os filtros de categoria e banca: entram todas as questões erradas que estão na hora de revisar. Cada uma sai depois de 2 acertos com pelo menos 2 dias entre eles.</div>
+
+    <div class="exam-config" id="examConfig">
+      <div class="field">
+        <label>Nº de questões</label>
+        <select id="examQty">
+          <option value="20">20 questões</option>
+          <option value="40">40 questões</option>
+          <option value="60" selected>60 questões</option>
+          <option value="0">Todas as disponíveis</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tempo disponível</label>
+        <select id="examTime">
+          <option value="60">1 hora</option>
+          <option value="120">2 horas</option>
+          <option value="180">3 horas</option>
+          <option value="240" selected>4 horas</option>
+          <option value="0">Sem limite (só cronometra)</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="start-btn" id="startBtn">Energizar simulado ▸</button>
+  </div>
+
+  <div class="card" id="quizCard">
+    <div class="q-meta">
+      <div class="q-meta-top"><button class="back-btn" id="backToMenuBtn">← Voltar ao menu</button></div>
+      <div class="q-meta-bottom">
+        <span class="left-group"><span class="tag" id="qBanca"></span> <span id="qCategory"></span></span>
+        <span class="right-group">
+          <span class="timer-box" id="timerBox" style="display:none;">--:--</span>
+          <span id="qCounter"></span>
+        </span>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="text-passage" id="textPassage" style="display:none;">
+      <div class="tp-label">Texto de referência</div>
+      <div id="textPassageBody"></div>
+    </div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="qOptions"></div>
+    <div class="feedback" id="feedback">
+      <div class="verdict" id="verdict"></div>
+      <div class="exp" id="exp"></div>
+      <div class="err-box" id="errBox">
+        <div class="err-status" id="errStatus"></div>
+        <textarea id="errNote" maxlength="400" placeholder="Por que errei? Anote em uma linha (opcional)" aria-label="Anotação sobre o erro"></textarea>
+      </div>
+    </div>
+    <button class="next-btn" id="nextBtn">Próxima questão ▸</button>
+    <button class="end-exam-btn" id="endExamBtn" style="display:none;margin-top:12px;margin-left:10px;">Encerrar prova agora</button>
+  </div>
+
+  <div class="summary" id="summaryCard">
+    <div class="brand-eyebrow">Simulado encerrado</div>
+    <div class="big-score" id="finalScore">0/0</div>
+    <div class="sub" id="finalPct">0% de aproveitamento</div>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <button class="start-btn" id="restartBtn" style="max-width:280px;margin:24px auto 0;">Novo simulado ▸</button>
+  </div>
+
+  <footer>Questões originais, elaboradas no estilo e nível das bancas Cesgranrio e Cespe/Cebraspe para treino de concurso — não reproduzem provas oficiais.<br><span id="storageModeNote"></span></footer>
+</div>
+
+<script type="text/plain" id="app-src">
+// ---------- Question bank ----------
+const BANK = window.__BANK;
+const TEXTS = window.__TEXTS;
+
+// ---------- State ----------
+const CATEGORIES = [...new Set(BANK.map(q=>q.cat))];
+let activeCats = new Set(CATEGORIES);
+const BANCAS = [...new Set(BANK.map(q=>q.banca))];
+let activeBancas = new Set(BANCAS);
+(function renderBancas(){
+  const rotulo = window.__SIM === 'eletrica'
+    ? {Cesgranrio:'CESGRANRIO (múltipla escolha)', Cespe:'CESPE/CEBRASPE (certo/errado)', Transpetro:'TRANSPETRO (dutos/terminais)'}
+    : {};
+  document.getElementById('bancaRow').innerHTML = BANCAS.map(b =>
+    `<div class="banca-pill on" data-banca="${b}">${rotulo[b] || b.toUpperCase()}</div>`).join('');
+})();
+let studyMode = "livre"; // "livre" | "prova" | "erros"
+let session = null; // {questions, idx, correct, results:{cat:{c,t}}, answered, elapsedSec}
+let history = null;
+let timerInterval = null;
+let timeRemainingSec = 0;
+let timerEndAt = 0;
+let pendingResume = null;
+
+const HKEY = window.__SIM + "-quiz-history";
+const SKEY = window.__SIM + "-quiz-inprogress";
+const WKEY = window.__SIM + "-quiz-stopwatch";
+const YKEY = window.__SIM + "-quiz-sync";       // repositório e chave de acesso (só neste navegador)
+const BKEY = window.__SIM + "-quiz-sync-base";  // como estava a nuvem na última sincronização
+
+const EXAM_DATE = "2026-12-06";   // data da prova (AAAA-MM-DD)
+const IDLE_CAP_SEC = 300;         // teto de tempo contado por questão / por explicação
+const AWAY_MS = 90000;            // tela fora por mais que isso não conta como estudo
+const ERR_STREAK_OUT = 2;         // acertos seguidos para sair do caderno de erros
+const ERR_GAP_DAYS = 2;           // intervalo mínimo entre o 1º e o 2º acerto
+const OTHER_CAT = "Outro / geral";
+const STUDY_TYPES = ["Teoria / PDF","Videoaula","Revisão / resumo","Questões fora do painel"];
+const PALETTE = ["#00D9B5","#F5A623","#5B8DEF","#FF4757","#B07CFF","#7ED957","#FF8A5B","#4DD0E1","#E6C229"];
+const PALETTE_OTHER = "#5c6675";
+
+// ---------- Helpers ----------
+const pad2 = n => String(n).padStart(2,'0');
+const $ = id => document.getElementById(id);
+function dayKey(d){ d = d || new Date(); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+function keyToDate(k){ const p = String(k).split('-').map(Number); return new Date(p[0], p[1]-1, p[2], 12); }
+function daysBetween(a,b){ return Math.round((keyToDate(b) - keyToDate(a)) / 86400000); }
+function addDays(k, n){ const d = keyToDate(k); d.setDate(d.getDate()+n); return dayKey(d); }
+function fmtDateBR(k){ const p = String(k).split('-'); return `${p[2]}/${p[1]}`; }
+function fmtDur(sec){
+  const m = Math.round((sec||0)/60);
+  if(m === 0 && sec > 0) return '<1 min';
+  if(m < 60) return m + ' min';
+  return Math.floor(m/60) + 'h' + pad2(m%60);
+}
+function fmtPace(sec){
+  sec = Math.round(sec||0);
+  if(sec < 60) return sec + 's';
+  return Math.floor(sec/60) + 'min' + pad2(sec%60) + 's';
+}
+function esc(str){
+  return String(str == null ? '' : str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---------- IDs estáveis das questões (usados pelo caderno de erros) ----------
+function hashStr(str){
+  let h = 5381;
+  for(let i=0;i<str.length;i++){ h = (((h << 5) + h) + str.charCodeAt(i)) >>> 0; }
+  return h.toString(36);
+}
+function qid(q){
+  if(!q.id) q.id = 'q' + hashStr([q.banca, q.cat, q.textRef || '', q.q, (q.opts || []).join('|')].join('||'));
+  return q.id;
+}
+const BANK_BY_ID = {};
+BANK.forEach(q=>{ BANK_BY_ID[qid(q)] = q; });
+
+// window.storage only exists inside Claude's artifact viewer. When this file is
+// downloaded and opened directly in a browser, we fall back to localStorage so
+// progress still persists between visits on the same device/browser.
+const hasClaudeStorage = (typeof window.storage !== 'undefined' && window.storage !== null);
+
+async function storageGet(key){
+  if(hasClaudeStorage){
+    try{ const r = await window.storage.get(key, false); return r ? r.value : null; }
+    catch(e){ return null; }
+  }
+  try{ return localStorage.getItem(key); }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  if(hasClaudeStorage){
+    try{ await window.storage.set(key, value, false); return true; }catch(e){ return false; }
+  }
+  try{ localStorage.setItem(key, value); return true; }catch(e){ return false; }
+}
+async function storageDelete(key){
+  if(hasClaudeStorage){
+    try{ await window.storage.delete(key, false); }catch(e){}
+    return;
+  }
+  try{ localStorage.removeItem(key); }catch(e){}
+}
+
+// ---------- History ----------
+// time:     {categoria: {q: seg respondendo, rev: seg lendo a explicação}}
+// days:     {'AAAA-MM-DD': {sim: seg no simulado, n: respondidas, c: acertos}}
+// studyLog: [{id, date, cat, tipo, min, obs}]  (estudo fora do simulado)
+// errors:   {idDaQuestao: {n, streak, cat, first, lastWrong, lastRight, note}}
+function emptyHistory(){
+  return {byCat:{}, byBanca:{}, sessions:[], totalCorrect:0, totalAnswered:0,
+          time:{}, days:{}, studyLog:[], errors:{}, mastered:0};
+}
+function normalizeHistory(h){
+  if(!h || typeof h !== 'object') return emptyHistory();
+  const base = emptyHistory();
+  Object.keys(base).forEach(k=>{ if(h[k] === undefined || h[k] === null) h[k] = base[k]; });
+  if(!Array.isArray(h.sessions)) h.sessions = [];
+  if(!Array.isArray(h.studyLog)) h.studyLog = [];
+  return h;
+}
+async function loadHistory(){
+  try{
+    const raw = await storageGet(HKEY);
+    history = normalizeHistory(raw ? JSON.parse(raw) : null);
+  }catch(e){
+    history = emptyHistory();
+  }
+  renderHistory();
+}
+async function saveHistory(){
+  await storageSet(HKEY, JSON.stringify(history));
+  syncTouch();
+}
+
+async function saveSessionState(){
+  if(!session) return;
+  await storageSet(SKEY, JSON.stringify({
+    session, studyMode, timeRemainingSec,
+    timerVisible: $('timerBox').style.display !== 'none'
+  }));
+}
+async function clearSessionState(){
+  await storageDelete(SKEY);
+}
+async function checkForSavedSession(){
+  try{
+    const raw = await storageGet(SKEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!saved.session || saved.session.idx >= saved.session.questions.length) return;
+    pendingResume = saved;
+    const total = saved.session.questions.length;
+    const at = Math.min(total, saved.session.idx + (saved.session.answered ? 2 : 1));
+    $('resumeProgress').textContent = `${at} de ${total}`;
+    $('resumeBanner').classList.add('show');
+  }catch(e){
+    // no saved session, nothing to do
+  }
+}
+
+// ---------- Views ----------
+function showView(v){
+  $('setupPanel').style.display = (v === 'setup') ? 'block' : 'none';
+  $('quizCard').classList.toggle('active', v === 'quiz');
+  $('summaryCard').classList.toggle('active', v === 'summary');
+  $('dashboardPanel').classList.toggle('active', v === 'dash');
+  $('studyPanel').classList.toggle('active', v === 'study');
+}
+// Sai da tela de questões guardando tempo e progresso (menu, dashboard, estudo teórico).
+async function leaveQuiz(){
+  if(!session || !$('quizCard').classList.contains('active')) return;
+  bankPhase();
+  stopTimer();
+  await saveHistory();
+  await saveSessionState();
+  syncSoon();
+}
+
+// ---------- Tempo por questão ----------
+// Duas fases por questão: 'q' (até responder) e 'rev' (lendo a explicação até avançar).
+// O tempo é calculado por horário, com teto de IDLE_CAP_SEC por fase, e descontando
+// períodos longos com a tela apagada ou em outro app.
+let phaseKind = null, phaseStart = 0, phaseAway = 0, hiddenAt = null;
+function phaseBegin(kind){
+  phaseKind = kind;
+  phaseStart = Date.now();
+  phaseAway = 0;
+  hiddenAt = document.hidden ? phaseStart : null;
+}
+function phaseEnd(){
+  if(!phaseKind) return 0;
+  const now = Date.now();
+  let away = phaseAway;
+  if(hiddenAt !== null && now - hiddenAt > AWAY_MS) away += now - hiddenAt;
+  const sec = Math.max(0, Math.min(IDLE_CAP_SEC, Math.round((now - phaseStart - away) / 1000)));
+  phaseKind = null;
+  hiddenAt = null;
+  return sec;
+}
+function dayRec(){
+  const k = dayKey();
+  return history.days[k] || (history.days[k] = {sim:0, n:0, c:0});
+}
+function bankTime(cat, kind, sec){
+  if(!(sec > 0)) return;
+  const t = history.time[cat] || (history.time[cat] = {q:0, rev:0});
+  t[kind] = (t[kind] || 0) + sec;
+  dayRec().sim += sec;
+  if(session) session.elapsedSec = (session.elapsedSec || 0) + sec;
+}
+function bankPhase(){
+  if(!session || !phaseKind) return;
+  const q = session.questions[session.idx];
+  const kind = phaseKind;
+  const sec = phaseEnd();
+  if(q) bankTime(q.cat, kind, sec);
+}
+document.addEventListener('visibilitychange', ()=>{
+  const now = Date.now();
+  if(document.hidden){
+    if(phaseKind) hiddenAt = now;
+  } else {
+    if(phaseKind && hiddenAt !== null){
+      if(now - hiddenAt > AWAY_MS) phaseAway += now - hiddenAt;
+      hiddenAt = null;
+    }
+    if(timerInterval) tickTimer();
+    swRender();
+  }
+});
+
+// ---------- Caderno de erros ----------
+function isDue(e){
+  if(!e.streak || !e.lastRight) return true;
+  return daysBetween(e.lastRight, dayKey()) >= ERR_GAP_DAYS;
+}
+function errStats(){
+  const ids = Object.keys(history.errors).filter(id=>BANK_BY_ID[id]);
+  const due = ids.filter(id=>isDue(history.errors[id]));
+  return {ids, due, waiting: ids.length - due.length};
+}
+function updateErrorBook(q, isRight){
+  const id = qid(q);
+  const today = dayKey();
+  let e = history.errors[id];
+  if(!isRight){
+    if(!e) e = history.errors[id] = {n:0, streak:0, cat:q.cat, first:today, note:''};
+    e.n++;
+    e.streak = 0;
+    e.lastWrong = today;
+    e.lastRight = null;
+    return {state:'added', e, id};
+  }
+  if(!e) return null;
+  if(e.streak >= 1 && e.lastRight && daysBetween(e.lastRight, today) < ERR_GAP_DAYS){
+    return {state:'early', e, id};
+  }
+  e.streak++;
+  e.lastRight = today;
+  if(e.streak >= ERR_STREAK_OUT){
+    delete history.errors[id];
+    history.mastered = (history.mastered || 0) + 1;
+    return {state:'mastered', e, id};
+  }
+  return {state:'progress', e, id};
+}
+function updateErrPill(){
+  const el = $('errPillCount');
+  if(!el || !history) return;
+  const s = errStats();
+  el.textContent = s.ids.length
+    ? `${s.due.length} para hoje · ${s.ids.length} no total`
+    : 'vazio por enquanto';
+}
+function renderErrBox(info){
+  const box = $('errBox');
+  const note = $('errNote');
+  if(!info){ box.classList.remove('show'); return; }
+  const e = info.e;
+  let msg;
+  if(info.state === 'added'){
+    msg = e.n === 1 ? 'Entrou no caderno de erros.' : `Continua no caderno de erros (errada ${e.n}x).`;
+  } else if(info.state === 'progress'){
+    msg = `1º acerto registrado. A questão volta em ${ERR_GAP_DAYS} dias; acertando de novo, sai do caderno.`;
+  } else if(info.state === 'early'){
+    msg = `Acerto dentro do intervalo de ${ERR_GAP_DAYS} dias: ainda não conta para sair do caderno.`;
+  } else {
+    msg = 'Saiu do caderno de erros: 2 acertos com intervalo entre eles.';
+  }
+  $('errStatus').textContent = msg;
+  if(info.state === 'mastered'){
+    note.style.display = 'none';
+    note.oninput = null;
+  } else {
+    note.style.display = 'block';
+    note.value = e.note || '';
+    note.oninput = ()=>{ const cur = history.errors[info.id]; if(cur) cur.note = note.value.slice(0, 400); };
+    note.onchange = ()=>{ saveHistory(); };
+  }
+  box.classList.add('show');
+}
+
+// ---------- Setup ----------
+function renderBreakers(){
+  const list = $('breakerList');
+  list.innerHTML = '';
+  CATEGORIES.forEach(cat=>{
+    const div = document.createElement('div');
+    div.className = 'breaker' + (activeCats.has(cat) ? ' on' : '');
+    div.dataset.cat = cat;
+    const h = (history && history.byCat[cat]) || {c:0,t:0};
+    const pct = h.t ? Math.round(100*h.c/h.t) : null;
+    const tm = (history && history.time[cat]) || {q:0, rev:0};
+    const sec = (tm.q || 0) + (tm.rev || 0);
+    let stat = pct===null ? 'sem histórico' : pct+'% acerto ('+h.t+' resp.)';
+    if(sec >= 60) stat += ' · ' + fmtDur(sec);
+    div.innerHTML = `<div class="switch"></div><div><div class="name">${cat}</div><div class="stat">${stat}</div></div>`;
+    div.onclick = ()=>{
+      div.classList.toggle('on');
+      if(div.classList.contains('on')) activeCats.add(cat); else activeCats.delete(cat);
+    };
+    list.appendChild(div);
+  });
+}
+
+$('bancaRow').addEventListener('click', (e)=>{
+  const pill = e.target.closest('.banca-pill');
+  if(!pill) return;
+  pill.classList.toggle('on');
+  const b = pill.dataset.banca;
+  if(pill.classList.contains('on')) activeBancas.add(b); else activeBancas.delete(b);
+});
+
+function setMode(mode){
+  studyMode = mode;
+  document.querySelectorAll('.mode-pill').forEach(p=>p.classList.toggle('on', p.dataset.mode === mode));
+  $('examConfig').classList.toggle('show', mode === 'prova');
+  $('errModeNote').classList.toggle('show', mode === 'erros');
+  $('startBtn').textContent = mode === 'prova'
+    ? 'Iniciar prova cronometrada ▸'
+    : (mode === 'erros' ? 'Revisar caderno de erros ▸' : 'Energizar simulado ▸');
+}
+$('modeRow').addEventListener('click', (e)=>{
+  const pill = e.target.closest('.mode-pill');
+  if(!pill) return;
+  setMode(pill.dataset.mode);
+});
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+// ---------- Timer da prova (por horário, não perde tempo com a tela apagada) ----------
+function stopTimer(){
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+function tickTimer(){
+  timeRemainingSec = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
+  updateTimerDisplay();
+  if(timeRemainingSec <= 0){
+    stopTimer();
+    finishSession();
+  }
+}
+function startTimer(){
+  stopTimer();
+  timerEndAt = Date.now() + timeRemainingSec * 1000;
+  $('timerBox').style.display = 'inline-block';
+  updateTimerDisplay();
+  timerInterval = setInterval(tickTimer, 1000);
+}
+function updateTimerDisplay(){
+  const timerBox = $('timerBox');
+  const h = Math.floor(timeRemainingSec/3600);
+  const m = Math.floor((timeRemainingSec%3600)/60);
+  const s = timeRemainingSec%60;
+  timerBox.textContent = h > 0
+    ? `${h}:${pad2(m)}:${pad2(s)}`
+    : `${pad2(m)}:${pad2(s)}`;
+  timerBox.classList.remove('warn','crit');
+  if(timeRemainingSec <= 60) timerBox.classList.add('crit');
+  else if(timeRemainingSec <= 300) timerBox.classList.add('warn');
+}
+
+$('startBtn').onclick = ()=>{
+  let questions;
+  if(studyMode === 'erros'){
+    const s = errStats();
+    if(s.ids.length === 0){
+      alert('Seu caderno de erros está vazio. As questões que você errar nos simulados entram nele sozinhas.');
+      return;
+    }
+    let ids = s.due;
+    if(ids.length === 0){
+      if(!confirm(`As ${s.ids.length} questões do caderno já tiveram o 1º acerto e estão no intervalo de ${ERR_GAP_DAYS} dias. Refazer mesmo assim? Esses acertos não contam para tirá-las do caderno.`)) return;
+      ids = s.ids;
+    }
+    questions = shuffle(ids.map(id=>BANK_BY_ID[id]));
+  } else {
+    const pool = BANK.filter(q=>activeCats.has(q.cat) && activeBancas.has(q.banca));
+    if(pool.length === 0){ alert('Selecione ao menos uma categoria e uma banca.'); return; }
+    questions = shuffle(pool);
+    if(studyMode === 'prova'){
+      const qty = parseInt($('examQty').value, 10);
+      if(qty > 0) questions = questions.slice(0, Math.min(qty, questions.length));
+    }
+  }
+
+  session = {
+    questions,
+    idx: 0,
+    correct: 0,
+    results: {},
+    answered: false,
+    elapsedSec: 0
+  };
+  pendingResume = null;
+  $('resumeBanner').classList.remove('show');
+  showView('quiz');
+
+  const timerBox = $('timerBox');
+  const endBtn = $('endExamBtn');
+  stopTimer();
+  timerBox.style.display = 'none';
+  if(studyMode === 'prova'){
+    const timeMin = parseInt($('examTime').value, 10);
+    endBtn.style.display = 'inline-block';
+    if(timeMin > 0){
+      timeRemainingSec = timeMin * 60;
+      startTimer();
+    }
+  } else {
+    endBtn.style.display = 'none';
+  }
+
+  renderQuestion();
+  saveSessionState();
+};
+
+$('endExamBtn').onclick = ()=>{
+  if(!confirm('Encerrar a prova agora? As questões não respondidas ficarão de fora da pontuação.')) return;
+  finishSession();
+};
+
+function renderQuestion(){
+  const q = session.questions[session.idx];
+  session.answered = false;
+  $('qBanca').textContent = q.banca;
+  const prev = history.errors[qid(q)];
+  $('qCategory').textContent = q.cat + (studyMode === 'erros' && prev ? ` · errada ${prev.n}x` : '');
+  $('qCounter').textContent = `${session.idx+1} / ${session.questions.length}`;
+  $('progressFill').style.width = `${100*session.idx/session.questions.length}%`;
+  $('qText').textContent = q.q;
+
+  const tp = $('textPassage');
+  if(q.textRef && TEXTS[q.textRef]){
+    tp.style.display = 'block';
+    $('textPassageBody').textContent = TEXTS[q.textRef];
+  } else {
+    tp.style.display = 'none';
+  }
+
+  $('feedback').classList.remove('show','ok','bad');
+  $('errBox').classList.remove('show');
+  $('nextBtn').classList.remove('show');
+
+  const optsDiv = $('qOptions');
+  optsDiv.innerHTML = '';
+
+  const correctIdx = (typeof q.correctFix === 'number') ? q.correctFix : q.correct;
+
+  if(q.type === 'mc'){
+    q.opts.forEach((opt,i)=>{
+      const letter = String.fromCharCode(65+i);
+      const div = document.createElement('div');
+      div.className = 'opt';
+      div.innerHTML = `<span class="letter">${letter}</span><span>${opt}</span>`;
+      div.onclick = ()=>answer(i, correctIdx, q);
+      optsDiv.appendChild(div);
+    });
+  } else {
+    ['Certo','Errado'].forEach((label,i)=>{
+      const val = (i===0);
+      const div = document.createElement('div');
+      div.className = 'opt';
+      div.innerHTML = `<span class="letter">${label==='Certo'?'C':'E'}</span><span>${label}</span>`;
+      div.onclick = ()=>answer(val, q.correct, q);
+      optsDiv.appendChild(div);
+    });
+  }
+
+  phaseBegin('q');
+}
+
+function answer(given, correct, q){
+  if(session.answered) return; // a resposta já foi confirmada: cliques extras não contam de novo
+  bankPhase();                 // fecha o tempo gasto até confirmar a resposta
+  session.answered = true;
+
+  const opts = document.querySelectorAll('#qOptions .opt');
+  opts.forEach(o=>o.classList.add('locked'));
+
+  let isRight;
+  if(q.type === 'mc'){
+    isRight = given === correct;
+    opts[correct].classList.add('correct');
+    if(!isRight) opts[given].classList.add('wrong');
+  } else {
+    isRight = given === correct;
+    const idx = correct ? 0 : 1;
+    opts[idx].classList.add('correct');
+    if(!isRight) opts[given?0:1].classList.add('wrong');
+  }
+
+  if(!session.results[q.cat]) session.results[q.cat] = {c:0,t:0};
+  session.results[q.cat].t++;
+  if(isRight){ session.correct++; session.results[q.cat].c++; }
+
+  if(!history.byCat[q.cat]) history.byCat[q.cat] = {c:0,t:0};
+  history.byCat[q.cat].t++;
+  if(!history.byBanca[q.banca]) history.byBanca[q.banca] = {c:0,t:0};
+  history.byBanca[q.banca].t++;
+  history.totalAnswered++;
+  if(isRight){ history.byCat[q.cat].c++; history.byBanca[q.banca].c++; history.totalCorrect++; }
+
+  const d = dayRec();
+  d.n++;
+  if(isRight) d.c++;
+  const errInfo = updateErrorBook(q, isRight);
+
+  saveHistory();
+  updateOverallStat();
+  updateErrPill();
+  saveSessionState();
+
+  const fb = $('feedback');
+  fb.classList.add('show', isRight ? 'ok':'bad');
+  $('verdict').textContent = isRight ? '✓ CORRETO' : '✗ INCORRETO';
+  $('exp').textContent = q.exp;
+  renderErrBox(errInfo);
+
+  $('nextBtn').classList.add('show');
+  phaseBegin('rev'); // tempo lendo a explicação também conta para a matéria
+}
+
+$('nextBtn').onclick = ()=>{
+  bankPhase();
+  session.idx++;
+  if(session.idx >= session.questions.length){
+    finishSession();
+  } else {
+    saveHistory();
+    renderQuestion();
+    saveSessionState();
+  }
+};
+
+function finishSession(){
+  stopTimer();
+  bankPhase();
+  clearSessionState();
+
+  const answeredCount = Object.values(session.results).reduce((s,r)=>s+r.t,0);
+  const sec = session.elapsedSec || 0;
+  history.sessions.unshift({
+    date: new Date().toISOString(),
+    correct: session.correct,
+    total: answeredCount,
+    mode: studyMode,
+    sec
+  });
+  history.sessions = history.sessions.slice(0, 15);
+  saveHistory();
+  syncSoon();
+
+  showView('summary');
+  $('finalScore').textContent = `${session.correct}/${session.questions.length}`;
+  const pct = Math.round(100*session.correct/session.questions.length);
+  let sub = `${pct}% de aproveitamento nesta sessão`;
+  if(answeredCount > 0 && sec > 0){
+    sub += ` · ${fmtDur(sec)} de estudo · ${fmtPace(sec/answeredCount)} por questão`;
+  }
+  $('finalPct').textContent = sub;
+
+  const grid = $('summaryGrid');
+  grid.innerHTML = '';
+  Object.entries(session.results).forEach(([cat,r])=>{
+    const p = Math.round(100*r.c/r.t);
+    const cls = p>=70?'good':(p>=50?'mid':'low');
+    const div = document.createElement('div');
+    div.className = 'summary-item';
+    div.innerHTML = `<div class="cat">${cat}</div><div class="val ${cls}">${r.c}/${r.t} · ${p}%</div>`;
+    grid.appendChild(div);
+  });
+  renderHistory();
+  renderBreakers();
+  updateErrPill();
+}
+
+$('restartBtn').onclick = ()=>{
+  showView('setup');
+};
+
+function renderHistory(){
+  updateOverallStat();
+}
+
+function updateOverallStat(){
+  const el = $('overallStat');
+  if(!history || history.totalAnswered===0){ el.textContent = '--%'; return; }
+  const p = Math.round(100*history.totalCorrect/history.totalAnswered);
+  el.textContent = p + '%';
+}
+
+$('resetHistory').onclick = async ()=>{
+  if(!confirm('Zerar todo o histórico? Isso apaga desempenho, sessões, tempo de estudo, lançamentos de teoria e o caderno de erros.' + (syncCfg ? ' Como a sincronização está ligada, isso vale para todos os aparelhos.' : ''))) return;
+  history = emptyHistory();
+  await saveHistory();
+  syncSoon();
+  updateOverallStat();
+  renderBreakers();
+  updateErrPill();
+  renderDashboard();
+};
+
+$('resumeBtn').onclick = ()=>{
+  if(!pendingResume) return;
+  const saved = pendingResume;
+  pendingResume = null;
+  session = saved.session;
+  timeRemainingSec = saved.timeRemainingSec || 0;
+  setMode(saved.studyMode || 'livre');
+  $('resumeBanner').classList.remove('show');
+
+  // Se a questão salva já tinha sido respondida, retoma na seguinte (não conta duas vezes).
+  if(session.answered){ session.idx++; session.answered = false; }
+
+  showView('quiz');
+  if(session.idx >= session.questions.length){ finishSession(); return; }
+
+  const timerBox = $('timerBox');
+  const endBtn = $('endExamBtn');
+  stopTimer();
+  endBtn.style.display = (studyMode === 'prova') ? 'inline-block' : 'none';
+  if(saved.timerVisible && timeRemainingSec > 0){
+    startTimer();
+  } else {
+    timerBox.style.display = 'none';
+  }
+
+  renderQuestion();
+  saveSessionState();
+};
+
+$('discardBtn').onclick = async ()=>{
+  await clearSessionState();
+  pendingResume = null;
+  $('resumeBanner').classList.remove('show');
+};
+
+// ---------- Dashboard ----------
+function timeByCat(){
+  const out = {};
+  const get = c => out[c] || (out[c] = {q:0, rev:0, teo:0});
+  Object.entries(history.time).forEach(([c,t])=>{
+    const o = get(c);
+    o.q += t.q || 0;
+    o.rev += t.rev || 0;
+  });
+  history.studyLog.forEach(e=>{ get(e.cat || OTHER_CAT).teo += (e.min || 0) * 60; });
+  return out;
+}
+function teoByDay(){
+  const out = {};
+  history.studyLog.forEach(e=>{ out[e.date] = (out[e.date] || 0) + (e.min || 0) * 60; });
+  return out;
+}
+
+function renderTimeDash(){
+  const byCat = timeByCat();
+  const teoDay = teoByDay();
+  let simSec = 0, teoSec = 0;
+  Object.values(byCat).forEach(t=>{ simSec += t.q + t.rev; teoSec += t.teo; });
+  const total = simSec + teoSec;
+
+  const today = dayKey();
+  let last7 = 0;
+  for(let i=0;i<7;i++){
+    const k = addDays(today, -i);
+    last7 += ((history.days[k] || {}).sim || 0) + (teoDay[k] || 0);
+  }
+  const left = daysBetween(today, EXAM_DATE);
+  const leftTxt = left > 0 ? String(left) : (left === 0 ? 'hoje' : '--');
+
+  $('dashTimeGrid').innerHTML = `
+    <div class="dash-stat"><div class="label">Tempo total</div><div class="value">${fmtDur(total)}</div></div>
+    <div class="dash-stat"><div class="label">Em questões</div><div class="value">${fmtDur(simSec)}</div></div>
+    <div class="dash-stat"><div class="label">Em teoria</div><div class="value" style="color:var(--amber);">${fmtDur(teoSec)}</div></div>
+    <div class="dash-stat"><div class="label">Média por dia (7 dias)</div><div class="value">${fmtDur(last7/7)}</div></div>
+    <div class="dash-stat"><div class="label">Dias até a prova</div><div class="value">${leftTxt}</div></div>
+  `;
+
+  const split = $('dashSplit');
+  const donut = $('dashDonut');
+  if(total <= 0){
+    split.innerHTML = '';
+    donut.innerHTML = '<div class="empty-note">Ainda sem tempo registrado. O tempo de questões entra sozinho quando você responde; teoria e videoaula você lança em "Estudo teórico".</div>';
+  } else {
+    const pSim = Math.round(100*simSec/total);
+    split.innerHTML = `
+      <div class="time-split">
+        <div class="split-track"><div class="split-sim" style="width:${100*simSec/total}%;"></div><div class="split-teo" style="width:${100*teoSec/total}%;"></div></div>
+        <div class="split-legend"><span><b style="color:var(--teal);">Questões e revisão</b> ${pSim}%</span><span><b style="color:var(--amber);">Teoria e vídeo</b> ${100-pSim}%</span></div>
+      </div>`;
+
+    let entries = Object.entries(byCat)
+      .map(([cat,t])=>[cat, t.q + t.rev + t.teo])
+      .filter(e=>e[1] > 0)
+      .sort((a,b)=>b[1]-a[1]);
+    if(entries.length > PALETTE.length){
+      const rest = entries.slice(PALETTE.length - 1);
+      entries = entries.slice(0, PALETTE.length - 1);
+      entries.push([`Outras ${rest.length} matérias`, rest.reduce((s,e)=>s+e[1],0), true]);
+    }
+    const R = 54, C = 2 * Math.PI * R;
+    let offset = 0, segs = '', legend = '';
+    entries.forEach((e,i)=>{
+      const color = e[2] ? PALETTE_OTHER : PALETTE[i % PALETTE.length];
+      const len = C * e[1] / total;
+      segs += `<circle cx="70" cy="70" r="${R}" fill="none" stroke="${color}" stroke-width="20" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 70 70)"/>`;
+      offset += len;
+      const pct = (100*e[1]/total).toFixed(1).replace('.', ',');
+      legend += `<div class="leg-row"><span class="leg-dot" style="background:${color};"></span><span class="leg-name">${esc(e[0])}</span><span class="leg-val">${fmtDur(e[1])} · ${pct}%</span></div>`;
+    });
+    donut.innerHTML = `
+      <svg viewBox="0 0 140 140" role="img" aria-label="Distribuição do tempo de estudo por matéria">
+        ${segs}
+        <text x="70" y="68" text-anchor="middle" fill="#EDEDE5" font-family="JetBrains Mono, monospace" font-size="17" font-weight="800">${fmtDur(total)}</text>
+        <text x="70" y="84" text-anchor="middle" fill="#8B93A1" font-family="JetBrains Mono, monospace" font-size="8">de estudo</text>
+      </svg>
+      <div class="donut-legend">${legend}</div>`;
+  }
+
+  // últimos 14 dias
+  const days = [];
+  for(let i=13;i>=0;i--){
+    const k = addDays(today, -i);
+    days.push({k, sim: (history.days[k] || {}).sim || 0, teo: teoDay[k] || 0});
+  }
+  const max = Math.max(1, ...days.map(d=>d.sim + d.teo));
+  const anyDay = days.some(d=>d.sim + d.teo > 0);
+  $('dashDays').innerHTML = !anyDay
+    ? '<div class="empty-note">Nenhum estudo registrado nos últimos 14 dias.</div>'
+    : `<div class="days-chart">${days.map(d=>{
+        const hs = 100 * d.sim / max, ht = 100 * d.teo / max;
+        const tip = `${fmtDateBR(d.k)}: ${fmtDur(d.sim)} em questões, ${fmtDur(d.teo)} em teoria`;
+        return `<div class="day-col${d.k===today?' today':''}" title="${tip}"><div class="day-stack">${ht>0?`<div class="day-seg teo" style="height:${ht}%;"></div>`:''}${hs>0?`<div class="day-seg sim" style="height:${hs}%;"></div>`:''}</div><div class="day-lbl">${d.k.slice(8)}</div></div>`;
+      }).join('')}</div>
+      <div class="chart-key"><span><i style="background:var(--teal);"></i>questões e revisão</span><span><i style="background:var(--amber);"></i>teoria e vídeo</span><span>maior dia: ${fmtDur(max)}</span></div>`;
+
+  // tempo x acerto
+  const cross = $('dashCross');
+  const cats = new Set([...Object.keys(byCat), ...Object.keys(history.byCat)]);
+  const rows = [...cats].map(cat=>{
+    const t = byCat[cat] || {q:0, rev:0, teo:0};
+    const r = history.byCat[cat] || {c:0, t:0};
+    return {cat, sec: t.q + t.rev + t.teo, n: r.t, acc: r.t ? Math.round(100*r.c/r.t) : null};
+  }).filter(r=>r.sec >= 30 || r.n > 0);
+  if(rows.length === 0){
+    cross.innerHTML = '<div class="empty-note">Ainda sem dados. Essa tabela mostra, por matéria, quanto tempo você investiu e quanto está acertando.</div>';
+  } else {
+    const withTime = rows.filter(r=>r.sec > 0);
+    const avgSec = withTime.length ? withTime.reduce((s,r)=>s+r.sec,0) / withTime.length : 0;
+    rows.sort((a,b)=>{
+      if(a.acc === null && b.acc === null) return b.sec - a.sec;
+      if(a.acc === null) return 1;
+      if(b.acc === null) return -1;
+      return a.acc - b.acc;
+    });
+    cross.innerHTML = '<div class="cross-row head"><div>Matéria</div><div class="cross-num">Tempo</div><div class="cross-num">Acerto</div></div>'
+      + rows.map(r=>{
+        let tag, cls;
+        if(r.n < 10){ tag = r.n === 0 ? 'sem questões respondidas' : `poucos dados (${r.n} resp.)`; cls = 'muted'; }
+        else if(r.acc >= 80){ tag = 'em dia'; cls = 'good'; }
+        else if(r.acc >= 60){ tag = 'quase lá'; cls = 'mid'; }
+        else if(r.sec >= avgSec){ tag = 'muito tempo e pouco acerto: mudar o método'; cls = 'low'; }
+        else { tag = 'pouco tempo e pouco acerto: precisa de mais horas'; cls = 'low'; }
+        const color = r.acc === null ? 'var(--muted)' : (r.acc>=70 ? 'var(--teal)' : (r.acc>=50 ? 'var(--amber)' : 'var(--red)'));
+        return `<div class="cross-row"><div class="cross-name">${esc(r.cat)}<span class="cross-tag ${cls}">${tag}</span></div><div class="cross-num">${fmtDur(r.sec)}</div><div class="cross-num" style="color:${color};">${r.acc === null ? '--' : r.acc + '%'}</div></div>`;
+      }).join('');
+  }
+}
+
+function renderErrorsDash(){
+  const box = $('dashErrors');
+  const s = errStats();
+  const grid = `
+    <div class="dash-grid" style="margin-bottom:14px;">
+      <div class="dash-stat"><div class="label">Para revisar hoje</div><div class="value" style="color:var(--amber);">${s.due.length}</div></div>
+      <div class="dash-stat"><div class="label">Aguardando intervalo</div><div class="value">${s.waiting}</div></div>
+      <div class="dash-stat"><div class="label">Dominadas</div><div class="value">${history.mastered || 0}</div></div>
+    </div>`;
+  if(s.ids.length === 0){
+    box.innerHTML = grid + '<div class="empty-note">Caderno vazio. Toda questão que você errar entra aqui sozinha e só sai depois de 2 acertos com pelo menos ' + ERR_GAP_DAYS + ' dias entre eles.</div>';
+    return;
+  }
+  const today = dayKey();
+  const groups = {};
+  s.ids.forEach(id=>{
+    const q = BANK_BY_ID[id];
+    (groups[q.cat] = groups[q.cat] || []).push(id);
+  });
+  const html = Object.entries(groups).sort((a,b)=>b[1].length-a[1].length).map(([cat,ids])=>{
+    const dueN = ids.filter(id=>isDue(history.errors[id])).length;
+    const items = ids.sort((a,b)=>history.errors[b].n - history.errors[a].n).map(id=>{
+      const e = history.errors[id];
+      const q = BANK_BY_ID[id];
+      const text = q.q.length > 170 ? q.q.slice(0,170) + '…' : q.q;
+      const due = isDue(e);
+      const when = due
+        ? 'para revisar agora'
+        : `1º acerto em ${fmtDateBR(e.lastRight)} · volta em ${fmtDateBR(addDays(e.lastRight, ERR_GAP_DAYS))}`;
+      return `<div class="err-item"><div class="err-q">${esc(text)}</div><div class="err-meta${due?' due':''}">errada ${e.n}x · última em ${fmtDateBR(e.lastWrong || e.first || today)} · ${when}</div>${e.note ? `<div class="err-note">${esc(e.note)}</div>` : ''}</div>`;
+    }).join('');
+    return `<details class="err-cat"><summary><span>${esc(cat)}</span><span class="cnt">${ids.length} ${ids.length===1?'questão':'questões'} · ${dueN} hoje</span></summary>${items}</details>`;
+  }).join('');
+  box.innerHTML = grid + html + '<button class="resume-btn" id="dashReviewBtn" style="margin-top:14px;">Revisar caderno agora ▸</button>';
+  $('dashReviewBtn').onclick = ()=>{
+    setMode('erros');
+    showView('setup');
+    $('startBtn').click();
+  };
+}
+
+function renderDashboard(){
+  // top stats
+  const grid = $('dashStatsGrid');
+  const overallPct = history.totalAnswered ? Math.round(100*history.totalCorrect/history.totalAnswered) : 0;
+  grid.innerHTML = `
+    <div class="dash-stat"><div class="label">Questões respondidas</div><div class="value">${history.totalAnswered}</div></div>
+    <div class="dash-stat"><div class="label">Acertos totais</div><div class="value">${history.totalCorrect}</div></div>
+    <div class="dash-stat"><div class="label">Aproveitamento geral</div><div class="value">${history.totalAnswered ? overallPct+'%' : '--'}</div></div>
+    <div class="dash-stat"><div class="label">Sessões concluídas</div><div class="value">${history.sessions.length}</div></div>
+  `;
+
+  renderTimeDash();
+  renderErrorsDash();
+
+  // category bars
+  const catDiv = $('dashCatBars');
+  const catEntries = Object.entries(history.byCat).sort((a,b)=>b[1].t-a[1].t);
+  catDiv.innerHTML = catEntries.length ? '' : '<div style="color:var(--muted);font-size:13px;">Ainda sem dados — responda algumas questões primeiro.</div>';
+  catEntries.forEach(([cat,r])=>{
+    const p = Math.round(100*r.c/r.t);
+    const cls = p>=70?'good':(p>=50?'mid':'low');
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-label"><span class="cat-n">${cat}</span><span class="cat-p">${r.c}/${r.t} · ${p}%</span></div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${p}%;"></div></div>
+    `;
+    catDiv.appendChild(row);
+  });
+
+  // banca bars
+  const bancaDiv = $('dashBancaBars');
+  const bancaEntries = Object.entries(history.byBanca).sort((a,b)=>b[1].t-a[1].t);
+  bancaDiv.innerHTML = bancaEntries.length ? '' : '<div style="color:var(--muted);font-size:13px;">Ainda sem dados por banca.</div>';
+  bancaEntries.forEach(([banca,r])=>{
+    const p = Math.round(100*r.c/r.t);
+    const cls = p>=70?'good':(p>=50?'mid':'low');
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-label"><span class="cat-n">${banca}</span><span class="cat-p">${r.c}/${r.t} · ${p}%</span></div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${p}%;"></div></div>
+    `;
+    bancaDiv.appendChild(row);
+  });
+
+  // session log
+  const logDiv = $('dashSessionLog');
+  const modeLabel = {prova:'prova cronometrada', erros:'caderno de erros', livre:'treino livre'};
+  logDiv.innerHTML = history.sessions.length ? '' : '<div style="color:var(--muted);font-size:13px;">Nenhuma sessão concluída ainda.</div>';
+  history.sessions.forEach(s=>{
+    const d = new Date(s.date);
+    const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const p = s.total ? Math.round(100*s.correct/s.total) : 0;
+    const color = p>=70 ? 'var(--teal)' : (p>=50 ? 'var(--amber)' : 'var(--red)');
+    const row = document.createElement('div');
+    row.className = 'session-log-row';
+    row.innerHTML = `
+      <span class="sdate">${dateStr} · ${modeLabel[s.mode] || 'treino livre'}${s.sec ? ' · ' + fmtDur(s.sec) : ''}</span>
+      <span class="sscore" style="color:${color};">${s.correct}/${s.total} (${p}%)</span>
+    `;
+    logDiv.appendChild(row);
+  });
+}
+
+$('dashToggleBtn').onclick = async ()=>{
+  await leaveQuiz();
+  renderDashboard();
+  showView('dash');
+};
+$('closeDashBtn').onclick = async ()=>{
+  showView('setup');
+  renderBreakers();
+  updateErrPill();
+  await checkForSavedSession();
+};
+
+// ---------- Estudo fora do simulado (teoria, videoaula, revisão) ----------
+let sw = {running:false, startAt:0, accumMs:0};
+let swInterval = null;
+function swElapsedMs(){ return sw.accumMs + (sw.running ? Date.now() - sw.startAt : 0); }
+async function swSave(){ await storageSet(WKEY, JSON.stringify(sw)); }
+function swRender(){
+  const ms = swElapsedMs();
+  const t = Math.floor(ms / 1000);
+  const txt = `${pad2(Math.floor(t/3600))}:${pad2(Math.floor((t%3600)/60))}:${pad2(t%60)}`;
+  const disp = $('swDisplay');
+  disp.textContent = txt;
+  disp.classList.toggle('live', sw.running);
+  $('swToggleBtn').textContent = sw.running ? 'Pausar' : (ms > 0 ? 'Continuar' : 'Iniciar cronômetro');
+  $('swStopBtn').disabled = ms < 1000;
+  const top = $('studyToggleBtn');
+  top.classList.toggle('live', sw.running);
+  top.textContent = sw.running ? `⏱ Cronômetro ${txt}` : '⏱ Estudo teórico';
+}
+function swTick(){
+  clearInterval(swInterval);
+  swInterval = sw.running ? setInterval(swRender, 1000) : null;
+  swRender();
+}
+async function swLoad(){
+  try{
+    const raw = await storageGet(WKEY);
+    if(raw){
+      const o = JSON.parse(raw);
+      if(o && typeof o === 'object') sw = {running: !!o.running, startAt: o.startAt || 0, accumMs: o.accumMs || 0};
+    }
+  }catch(e){}
+  swTick();
+}
+$('swToggleBtn').onclick = async ()=>{
+  if(sw.running){
+    sw.accumMs += Date.now() - sw.startAt;
+    sw.running = false;
+  } else {
+    sw.startAt = Date.now();
+    sw.running = true;
+  }
+  swTick();
+  await swSave();
+};
+$('swStopBtn').onclick = async ()=>{
+  const ms = swElapsedMs();
+  if(ms < 1000) return;
+  const mins = Math.max(1, Math.round(ms / 60000));
+  sw = {running:false, startAt:0, accumMs:0};
+  swTick();
+  await swSave();
+  $('stMin').value = mins;
+  $('stDate').value = dayKey();
+  $('swHint').textContent = `Tempo cronometrado: ${mins} min. Confira a matéria e o tipo e toque em "Lançar estudo".`;
+};
+
+function initStudyForm(){
+  $('stCat').innerHTML = CATEGORIES.concat([OTHER_CAT]).map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  $('stTipo').innerHTML = STUDY_TYPES.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  $('stDate').value = dayKey();
+  $('stDate').max = dayKey();
+}
+function renderStudyPanel(){
+  const today = dayKey();
+  const sim = (history.days[today] || {}).sim || 0;
+  const teo = teoByDay()[today] || 0;
+  $('studyToday').innerHTML = `Hoje: <b>${fmtDur(sim)}</b> em questões e <b>${fmtDur(teo)}</b> em teoria ou vídeo. O tempo de questões entra sozinho; aqui você lança o que estudou fora do simulado.`;
+
+  const list = $('studyLogList');
+  const entries = history.studyLog.slice().sort((a,b)=>{
+    if(a.date !== b.date) return a.date < b.date ? 1 : -1;
+    return String(a.id) < String(b.id) ? 1 : -1;
+  }).slice(0, 40);
+  if(entries.length === 0){
+    list.innerHTML = '<div class="empty-note">Nenhum lançamento ainda. Estudou teoria ou assistiu a uma videoaula? Lance acima para entrar na conta de horas da matéria.</div>';
+    return;
+  }
+  list.innerHTML = entries.map(e=>`
+    <div class="log-row">
+      <div class="log-main">${esc(e.cat)}<div class="log-sub">${fmtDateBR(e.date)} · ${esc(e.tipo)}${e.obs ? ' · ' + esc(e.obs) : ''}</div></div>
+      <span class="log-min">${fmtDur((e.min||0)*60)}</span>
+      <button class="log-del" data-id="${esc(e.id)}" aria-label="Apagar lançamento" title="Apagar lançamento">×</button>
+    </div>`).join('');
+}
+$('stAddBtn').onclick = async ()=>{
+  const min = parseInt($('stMin').value, 10);
+  if(!min || min < 1 || min > 720){ alert('Informe os minutos estudados (de 1 a 720).'); return; }
+  const date = $('stDate').value || dayKey();
+  if(date > dayKey()){ alert('A data não pode ser no futuro.'); return; }
+  history.studyLog.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    date,
+    cat: $('stCat').value,
+    tipo: $('stTipo').value,
+    min,
+    obs: $('stObs').value.trim().slice(0,120)
+  });
+  await saveHistory();
+  syncSoon();
+  $('stMin').value = '';
+  $('stObs').value = '';
+  $('swHint').textContent = `Lançado: ${fmtDur(min*60)} em ${$('stCat').value}.`;
+  renderStudyPanel();
+};
+$('studyLogList').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('.log-del');
+  if(!btn) return;
+  if(!confirm('Apagar este lançamento de estudo?')) return;
+  history.studyLog = history.studyLog.filter(x=>String(x.id) !== btn.dataset.id);
+  await saveHistory();
+  syncSoon();
+  renderStudyPanel();
+});
+$('studyToggleBtn').onclick = async ()=>{
+  await leaveQuiz();
+  renderStudyPanel();
+  showView('study');
+};
+$('closeStudyBtn').onclick = async ()=>{
+  showView('setup');
+  await checkForSavedSession();
+};
+
+// ---------- Sincronização entre aparelhos (conta do aluno no Supabase) ----------
+// O progresso fica na tabela "progresso", uma linha por aluno e simulado.
+// Cada aparelho guarda a "base" (como estava a nuvem na última sincronização) e, ao
+// sincronizar, soma à nuvem só o que mudou neste aparelho desde então. Assim dá para
+// estudar nos dois aparelhos, até sem internet, sem um apagar o que o outro fez.
+let syncCfg = null;       // {repo:'usuario/nome', token, last}
+let syncBase = null;      // {repo, data}
+let syncBusy = false, syncAgain = false, syncTimer = null, syncLastTry = 0, syncHalt = false;
+let syncState = 'off';    // off | ok | pending | busy | offline | error | choice
+let storageNoteDefault = '';
+
+const clone = o => JSON.parse(JSON.stringify(o));
+const sameRepo = (a,b) => String(a||'').toLowerCase() === String(b||'').toLowerCase();
+function hasSyncBase(){ return !!(syncCfg && syncBase && sameRepo(syncBase.repo, syncCfg.repo)); }
+function b64encode(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for(let i=0;i<bytes.length;i+=0x8000){ bin += String.fromCharCode.apply(null, bytes.subarray(i, i+0x8000)); }
+  return btoa(bin);
+}
+function b64decode(b64){
+  const bin = atob(String(b64).replace(/\s/g,''));
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+// ----- junção de dados: R = nuvem, L = este aparelho, B = base da última sincronização -----
+function numMerge(r,l,b){ return Math.max(0, (r||0) + ((l||0) - (b||0))); }
+function mergeCounters(R,L,B,fields){
+  const out = {};
+  const keys = new Set([...Object.keys(R), ...Object.keys(L), ...Object.keys(B)]);
+  keys.forEach(k=>{
+    const r = R[k] || {}, l = L[k] || {}, b = B[k] || {};
+    const o = {};
+    let any = false;
+    fields.forEach(f=>{ o[f] = numMerge(r[f], l[f], b[f]); if(o[f] > 0) any = true; });
+    if(any) out[k] = o;
+  });
+  return out;
+}
+function mergeList(R,L,B,keyFn){
+  const bK = new Set(B.map(keyFn)), lK = new Set(L.map(keyFn)), seen = new Set(), out = [];
+  R.forEach(x=>{
+    const k = keyFn(x);
+    if(seen.has(k)) return;
+    if(bK.has(k) && !lK.has(k)) return;   // apagado neste aparelho
+    seen.add(k); out.push(x);
+  });
+  L.forEach(x=>{
+    const k = keyFn(x);
+    if(seen.has(k)) return;
+    if(bK.has(k)) return;                 // apagado no outro aparelho
+    seen.add(k); out.push(x);
+  });
+  return out;
+}
+function mergeErrors(R,L,B){
+  const out = {};
+  const same = (a,b) => JSON.stringify(a||null) === JSON.stringify(b||null);
+  const lastAct = e => [e.lastWrong||'', e.lastRight||''].sort().pop();
+  const keys = new Set([...Object.keys(R), ...Object.keys(L), ...Object.keys(B)]);
+  keys.forEach(id=>{
+    const r = R[id], l = L[id], b = B[id];
+    const lChanged = !same(l,b), rChanged = !same(r,b);
+    let v;
+    if(!lChanged) v = r;
+    else if(!rChanged) v = l;
+    else if(!l || !r) v = l || r;          // um lado tirou do caderno e o outro mexeu: mantém
+    else {
+      const st = e => e ? JSON.stringify([e.streak||0, e.lastWrong||null, e.lastRight||null]) : null;
+      const lSt = st(l) !== st(b), rSt = st(r) !== st(b);
+      let src;
+      if(lSt && !rSt) src = l;
+      else if(rSt && !lSt) src = r;
+      else {
+        const la = lastAct(l), ra = lastAct(r);
+        // mais recente vence; no mesmo dia, fica o que mantém a questão no caderno
+        src = la > ra ? l : (ra > la ? r : ((l.streak||0) <= (r.streak||0) ? l : r));
+      }
+      v = Object.assign({}, r, {streak: src.streak||0, lastWrong: src.lastWrong||null, lastRight: src.lastRight||null});
+      v.n = Math.max(1, numMerge(r.n, l.n, b ? b.n : 0));
+      v.first = [l.first, r.first].filter(Boolean).sort()[0] || v.first;
+      const lNoteChanged = (l.note||'') !== ((b && b.note) || '');
+      v.note = lNoteChanged ? (l.note||'') : (r.note||'');
+    }
+    if(v) out[id] = v;
+  });
+  return out;
+}
+function mergeHistory(R,L,B){
+  R = normalizeHistory(clone(R || null));
+  L = normalizeHistory(clone(L || null));
+  B = normalizeHistory(clone(B || null));
+  const sessions = mergeList(R.sessions, L.sessions, B.sessions, s=>[s.date, s.mode, s.correct, s.total].join('|'))
+    .sort((a,b)=> a.date < b.date ? 1 : (a.date > b.date ? -1 : 0))
+    .slice(0, 15);
+  return {
+    byCat: mergeCounters(R.byCat, L.byCat, B.byCat, ['c','t']),
+    byBanca: mergeCounters(R.byBanca, L.byBanca, B.byBanca, ['c','t']),
+    sessions,
+    totalCorrect: numMerge(R.totalCorrect, L.totalCorrect, B.totalCorrect),
+    totalAnswered: numMerge(R.totalAnswered, L.totalAnswered, B.totalAnswered),
+    time: mergeCounters(R.time, L.time, B.time, ['q','rev']),
+    days: mergeCounters(R.days, L.days, B.days, ['sim','n','c']),
+    studyLog: mergeList(R.studyLog, L.studyLog, B.studyLog, e=>String(e.id)),
+    errors: mergeErrors(R.errors, L.errors, B.errors),
+    mastered: numMerge(R.mastered, L.mastered, B.mastered)
+  };
+}
+const canonHistory = h => mergeHistory(h, null, null);
+function historyHasData(h){
+  return !!(h && (h.totalAnswered > 0 || (h.studyLog && h.studyLog.length)
+    || Object.keys(h.errors || {}).length || Object.keys(h.time || {}).length));
+}
+function syncDirty(){
+  if(!syncCfg) return false;
+  if(!hasSyncBase()) return true;
+  return JSON.stringify(canonHistory(history)) !== JSON.stringify(syncBase.data);
+}
+
+// ----- chamadas ao banco (Supabase) -----
+class SyncError extends Error{
+  constructor(kind, msg){ super(msg); this.kind = kind; }
+}
+const SB = window.__SB, SIM = window.__SIM;
+function sbFail(err){
+  const m = (err && (err.message || err.error_description)) || String(err || '');
+  if(!navigator.onLine || /failed to fetch|networkerror|network request|load failed/i.test(m)) return new SyncError('offline', 'Sem conexão.');
+  if(err && (err.code === '42501' || /row-level security|permission denied/i.test(m))){
+    return new SyncError('auth', 'Seu acesso a este simulado não está ativo. O progresso continua salvo neste aparelho e volta a sincronizar quando o acesso for renovado.');
+  }
+  if(err && (err.status === 401 || /jwt|refresh token|not authenticated/i.test(m))){
+    return new SyncError('auth', 'Sua sessão expirou. Entre de novo pela Minha área.');
+  }
+  return new SyncError('error', 'Não foi possível sincronizar agora (' + (m || 'erro desconhecido') + ').');
+}
+async function ghGet(){
+  let r;
+  try{ r = await SB.from('progresso').select('dados, versao').eq('simulado', SIM).maybeSingle(); }
+  catch(e){ throw sbFail(e); }
+  if(r.error) throw sbFail(r.error);
+  if(!r.data) return {data:null, sha:null};
+  return {data: r.data.dados, sha: r.data.versao};
+}
+async function ghPut(dados, versao){
+  let r;
+  try{
+    if(versao == null){
+      r = await SB.from('progresso').insert({simulado: SIM, dados, versao: 1, email: String(window.__EMAIL || '').toLowerCase()});
+    } else {
+      r = await SB.from('progresso').update({dados, versao: versao + 1}).eq('simulado', SIM).eq('versao', versao).select('versao');
+    }
+  }catch(e){ throw sbFail(e); }
+  if(r.error){
+    if(r.error.code === '23505') return {conflict:true};   // outro aparelho criou a linha antes
+    throw sbFail(r.error);
+  }
+  if(versao != null && (!r.data || r.data.length === 0)) return {conflict:true};  // versão mudou no meio
+  return {conflict:false};
+}
+
+// ----- estado na tela -----
+function updateStorageNote(){
+  $('storageModeNote').textContent = syncCfg
+    ? `Progresso salvo neste aparelho e sincronizado com a sua conta (${syncCfg.repo}).`
+    : storageNoteDefault;
+}
+function setSyncState(state, msg){
+  syncState = state;
+  const top = $('syncTopBtn');
+  const labels = {
+    off:'☁ Sincronizar aparelhos', busy:'☁ Sincronizando…', ok:'☁ Sincronizado', pending:'☁ Envio pendente',
+    offline:'☁ Sem conexão', error:'☁ Erro ao sincronizar', choice:'☁ Falta uma escolha'
+  };
+  top.textContent = labels[state] || labels.off;
+  top.classList.toggle('live', ['pending','offline','error','choice'].includes(state));
+
+  $('syncOff').style.display = syncCfg ? 'none' : 'block';
+  $('syncOn').style.display = syncCfg ? 'block' : 'none';
+  $('syncChoice').style.display = (state === 'choice') ? 'block' : 'none';
+  if(syncCfg) $('syncRepoName').textContent = syncCfg.repo;
+
+  let text = msg || '';
+  if(!msg){
+    if(state === 'ok'){
+      const d = new Date(syncCfg.last || Date.now());
+      text = `Sincronizado em ${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}.`;
+    } else if(state === 'pending') text = 'Há mudanças neste aparelho ainda não enviadas. Elas sobem sozinhas em instantes.';
+    else if(state === 'busy') text = 'Sincronizando…';
+    else if(state === 'offline') text = 'Sem conexão com o GitHub. O progresso continua salvo neste aparelho e sobe na próxima sincronização.';
+    else if(state === 'choice') text = 'Escolha acima o que fazer com o progresso deste aparelho.';
+  }
+  const st = $('syncStatus');
+  st.textContent = text;
+  st.style.display = text ? 'block' : 'none';
+  updateStorageNote();
+}
+function refreshAfterSync(){
+  updateOverallStat();
+  updateErrPill();
+  renderBreakers();
+  if($('dashboardPanel').classList.contains('active')) renderDashboard();
+  if($('studyPanel').classList.contains('active')) renderStudyPanel();
+}
+
+// ----- ciclo de sincronização -----
+function scheduleSync(ms, replace){
+  if(!syncCfg || syncHalt) return;
+  if(syncTimer && !replace) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(()=>{ syncTimer = null; syncNow(); }, ms);
+}
+function syncTouch(){            // chamado a cada gravação do histórico
+  if(!syncCfg) return;
+  if(syncState === 'ok') setSyncState('pending');
+  scheduleSync(30000, false);
+}
+function syncSoon(){ scheduleSync(1500, true); }
+
+async function syncNow(choice){
+  if(!syncCfg) return false;
+  if(syncBusy){ syncAgain = true; return false; }
+  syncBusy = true;
+  syncLastTry = Date.now();
+  clearTimeout(syncTimer); syncTimer = null;
+  setSyncState('busy');
+  let ok = false, needChoice = false;
+  try{
+    for(let attempt=0; attempt<3 && !ok && !needChoice; attempt++){
+      const L = clone(history);
+      const remote = await ghGet();
+      const hasBase = hasSyncBase();
+      let merged;
+      if(!remote.data) merged = canonHistory(L);                         // nuvem vazia: sobe o deste aparelho
+      else if(hasBase) merged = mergeHistory(remote.data, L, syncBase.data);
+      else if(!historyHasData(L) || choice === 'cloud') merged = canonHistory(remote.data);
+      else if(choice === 'join') merged = mergeHistory(remote.data, L, null);
+      else if(choice === 'local') merged = canonHistory(L);
+      else { needChoice = true; break; }                                 // 1ª conexão com dados dos dois lados
+
+      const remoteNow = remote.data ? JSON.stringify(canonHistory(remote.data)) : null;
+      if(JSON.stringify(merged) !== remoteNow){
+        const r = await ghPut(merged, remote.sha);
+        if(r.conflict){                                                  // outro aparelho gravou no meio: refaz
+          await new Promise(res=>setTimeout(res, 400 * (attempt + 1)));
+          continue;
+        }
+      }
+      // deu certo: aplica aqui, preservando o que foi respondido durante a sincronização
+      const before = JSON.stringify(history);
+      history = mergeHistory(merged, history, L);
+      syncBase = {repo: syncCfg.repo, data: clone(merged)};
+      syncCfg.last = Date.now();
+      await storageSet(HKEY, JSON.stringify(history));
+      await storageSet(BKEY, JSON.stringify(syncBase));
+      await storageSet(YKEY, JSON.stringify(syncCfg));
+      if(JSON.stringify(history) !== before) refreshAfterSync();
+      ok = true;
+    }
+    if(needChoice){
+      syncAgain = false;
+      setSyncState('choice');
+    } else if(!ok){
+      throw new SyncError('error', 'Outro aparelho estava gravando ao mesmo tempo. Tente de novo em instantes.');
+    } else {
+      setSyncState(syncDirty() ? 'pending' : 'ok');
+    }
+  }catch(e){
+    const kind = e && e.kind;
+    if(kind === 'offline'){
+      setSyncState('offline');
+    } else {
+      if(kind === 'auth') syncHalt = true;     // não insiste até o usuário corrigir
+      setSyncState('error', (e && e.message) || 'Não foi possível sincronizar.');
+    }
+  }finally{
+    syncBusy = false;
+    if(syncState === 'offline') scheduleSync(60000, true);
+    else if(syncAgain || (ok && syncDirty())){ syncAgain = false; scheduleSync(5000, true); }
+  }
+  return ok;
+}
+
+document.addEventListener('visibilitychange', ()=>{
+  if(!syncCfg || syncHalt || syncState === 'choice') return;
+  if(document.hidden){
+    if(syncDirty()) syncNow();                          // saiu da página: tenta enviar o que falta
+  } else if(Date.now() - syncLastTry > 60000){
+    syncNow();                                          // voltou: busca o que o outro aparelho fez
+  }
+});
+
+// ----- botões -----
+$('syncNowBtn').onclick = ()=>{ syncHalt = false; syncNow(); };
+$('syncDisconnectBtn').onclick = async ()=>{
+  if(!confirm('Sair da conta neste aparelho? Seu progresso fica salvo na conta.')) return;
+  await leaveQuiz();
+  await syncNow();
+  await SB.auth.signOut();
+  location.href = 'index.html';
+};
+document.querySelectorAll('#syncChoice [data-choice]').forEach(btn=>{
+  btn.onclick = ()=>{
+    const c = btn.dataset.choice;
+    if(c === 'cloud' && !confirm('Usar só o progresso da nuvem? O que está salvo neste aparelho será descartado.')) return;
+    if(c === 'local' && !confirm('Usar só o progresso deste aparelho? O que está na nuvem será substituído.')) return;
+    syncNow(c);
+  };
+});
+$('syncTopBtn').onclick = async ()=>{
+  if(syncState !== 'choice' && syncState !== 'error'){ syncHalt = false; syncNow(); return; }
+  await leaveQuiz();
+  renderDashboard();
+  showView('dash');
+  const p = $('syncPanel');
+  if(p.scrollIntoView) p.scrollIntoView({block:'start'});
+};
+
+async function syncInit(){
+  storageNoteDefault = $('storageModeNote').textContent;
+  syncCfg = {repo: String(window.__EMAIL || '').toLowerCase(), token: '-', last: 0};
+  try{
+    const rawB = await storageGet(BKEY);
+    const b = rawB ? JSON.parse(rawB) : null;
+    if(b && b.repo && b.data) syncBase = b;
+  }catch(e){}
+  setSyncState(syncDirty() ? 'pending' : 'ok');
+  syncNow();
+}
+
+// ---------- Backup ----------
+$('exportBtn').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(history, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `backup-simulado-${window.__SIM}-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+$('importBtn').onclick = ()=>{
+  $('importFile').click();
+};
+
+$('importFile').onchange = (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev)=>{
+    try{
+      const imported = JSON.parse(ev.target.result);
+      if(!imported || typeof imported !== 'object' || !('byCat' in imported)){
+        alert('Esse arquivo não parece ser um backup válido deste simulado.');
+        return;
+      }
+      history = normalizeHistory(imported);
+      await saveHistory();
+      syncSoon();
+      renderDashboard();
+      renderBreakers();
+      updateOverallStat();
+      updateErrPill();
+      alert('Backup importado com sucesso! Seu progresso foi restaurado.');
+    }catch(err){
+      alert('Não foi possível ler esse arquivo. Verifique se é um backup válido (.json) exportado deste mesmo simulado.');
+    }
+    $('importFile').value = '';
+  };
+  reader.readAsText(file);
+};
+
+$('backToMenuBtn').onclick = async ()=>{
+  await leaveQuiz();
+  showView('setup');
+  renderBreakers();
+  await checkForSavedSession();
+};
+
+// init
+(async ()=>{
+  const note = $('storageModeNote');
+  note.textContent = hasClaudeStorage
+    ? 'Progresso salvo na sua conta Claude.'
+    : 'Progresso salvo neste navegador/aparelho (localStorage) — não muda de app nem limpa os dados do navegador, ou perde o histórico.';
+  await loadHistory();
+  renderBreakers();
+  initStudyForm();
+  updateErrPill();
+  await swLoad();
+  await checkForSavedSession();
+  await syncInit();
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+(async function(){
+  const portao = document.getElementById('portao');
+  const caixa = portao.querySelector('.caixa');
+  const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const dataBR = (d) => { const p = String(d).slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; };
+  function tela(html){ caixa.innerHTML = html; }
+  try{
+    const C = window.CFG;
+    const sim = new URLSearchParams(location.search).get('s');
+    if(!C || !C.simulados || !C.simulados[sim]){
+      tela('<h2>Simulado não encontrado</h2><p>Abra o simulado pela sua área.</p><a class="btn a" href="index.html#area">Ir para minha área</a>');
+      return;
+    }
+    const info = C.simulados[sim];
+    document.title = info.titulo;
+    if(!window.supabase || /COLE_/.test(C.supabaseUrl + C.supabaseAnonKey)){
+      tela('<h2>Sem conexão com o sistema</h2><p>Verifique a internet e recarregue a página.</p>');
+      return;
+    }
+    const SB = window.supabase.createClient(C.supabaseUrl, C.supabaseAnonKey);
+    const { data: { session } } = await SB.auth.getSession();
+    if(!session){
+      location.replace('index.html?volta=' + encodeURIComponent('simulado.html?s=' + sim) + '#entrar');
+      return;
+    }
+    const acesso = await SB.rpc('tem_acesso', { p_simulado: sim });
+    if(acesso.error) throw acesso.error;
+    if(acesso.data !== true){
+      const { data: a } = await SB.from('acessos').select('valido_ate').eq('simulado', sim).maybeSingle();
+      try{ sessionStorage.setItem('escolha', JSON.stringify({ simulado: sim, plano: 'mensal' })); }catch(e){}
+      tela('<svg role="img" aria-label="Acesso bloqueado" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'
+        + (a ? '<h2>Seu acesso ao simulado de ' + esc(info.nome) + ' terminou</h2><p>O plano venceu em <b>' + dataBR(a.valido_ate) + '</b>. Seu progresso, o caderno de erros e o tempo de estudo continuam guardados: renove e siga de onde parou.</p>'
+             : '<h2>Você ainda não tem acesso ao simulado de ' + esc(info.nome) + '</h2><p>Escolha um plano para liberar. Se já pagou, a liberação sai em até ' + esc(C.prazoLiberacao) + '.</p>')
+        + '<a class="btn a" href="index.html#pedido">Renovar mensal</a><a class="btn b" href="index.html#planos">Ver todos os planos</a>');
+      return;
+    }
+    async function todas(tabela, colunas, ordem){
+      const linhas = [];
+      for(let de = 0; ; de += 1000){
+        const r = await SB.from(tabela).select(colunas).eq('simulado', sim).order(ordem).range(de, de + 999);
+        if(r.error) throw r.error;
+        linhas.push(...r.data);
+        if(r.data.length < 1000) break;
+      }
+      return linhas;
+    }
+    const [qs, ts] = await Promise.all([todas('questoes', 'dados, ordem', 'ordem'), todas('textos', 'ref, texto', 'ref')]);
+    if(!qs.length) throw new Error('Nenhuma questão cadastrada para este simulado.');
+    window.__SB = SB;
+    window.__SIM = sim;
+    window.__EMAIL = session.user.email;
+    window.__BANK = qs.map((r) => r.dados);
+    window.__TEXTS = Object.fromEntries(ts.map((t) => [t.ref, t.texto]));
+    document.getElementById('simEyebrow').textContent = info.eyebrow;
+    document.getElementById('simTitulo').textContent = 'Painel de Bancada — ' + info.titulo;
+    portao.style.display = 'none';
+    document.getElementById('appWrap').style.display = '';
+    const app = document.createElement('script');
+    app.textContent = document.getElementById('app-src').textContent;
+    document.body.appendChild(app);
+  }catch(e){
+    tela('<h2>Não foi possível abrir o simulado</h2><p>' + esc(e && e.message ? e.message : e) + '</p><a class="btn a" href="">Tentar de novo</a><a class="btn b" href="index.html#area">Ir para minha área</a>');
+  }
+})();
+</script>
+</body>
+</html>
